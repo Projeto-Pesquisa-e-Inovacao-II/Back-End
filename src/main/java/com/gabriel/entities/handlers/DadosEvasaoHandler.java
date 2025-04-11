@@ -30,25 +30,23 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
             }
 
             try {
-                Integer colLote = Integer.parseInt(row.getCell(0).getStringCellValue());
-                Integer colPraca = Integer.parseInt(row.getCell(1).getStringCellValue());
-                Integer colSentido = Integer.parseInt(row.getCell(2).getStringCellValue());
-                Date colData = new SimpleDateFormat("dd/MM/yyyy").parse(row.getCell(3).getStringCellValue());
-                Integer colHora = Integer.parseInt(row.getCell(4).getStringCellValue());
-                Integer colTipo = Integer.parseInt(row.getCell(5).getStringCellValue());
-                Integer colCategoria = Integer.parseInt(row.getCell(6).getStringCellValue());
-                Integer colTipoPagamento = Integer.parseInt(row.getCell(7).getStringCellValue());
-                Integer colTipoCampo = Integer.parseInt(row.getCell(8).getStringCellValue());
-                Integer colQuantidade = Integer.parseInt(row.getCell(9).getStringCellValue());
-                Double colValor = Double.parseDouble(row.getCell(10).getStringCellValue());
+                Integer colLote = (int) row.getCell(0).getNumericCellValue();
+                Integer colPraca =  (int) row.getCell(1).getNumericCellValue();
+                Integer colSentido =  (int) row.getCell(2).getNumericCellValue();
+                Date colData = row.getCell(3).getDateCellValue();
+                Integer colHora =  (int) row.getCell(4).getNumericCellValue();
+                Integer colTipo =  (int) row.getCell(5).getNumericCellValue();
+                Integer colCategoria =  (int) row.getCell(6).getNumericCellValue();
+                Integer colTipoPagamento =  (int) row.getCell(7).getNumericCellValue();
+                Integer colTipoCampo =  (int) row.getCell(8).getNumericCellValue();
+                Integer colQuantidade =  (int) row.getCell(9).getNumericCellValue();
+                Double colValor = row.getCell(10).getNumericCellValue();
 
                 DadosEvasao dadosEvasao = new DadosEvasao(colLote, colPraca, colSentido, colData, colHora, colTipo, colCategoria, colTipoPagamento, colTipoCampo, colQuantidade, colValor);
                 dadosEvasaos.add(dadosEvasao);
-
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
+                System.out.println("dadosEvasao finalizou");
             }  catch (Exception rowException) {
-                System.out.printf("Erro ao processar a linha: {}", row.getRowNum(), rowException);
+                System.out.println("Erro ao processar a linha: " + row.getRowNum() + " | " + rowException);
             }
 
         }
@@ -57,10 +55,11 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
     public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao) {
         System.out.println("iniciando novo dadosEvasao");
         String sql = """
-        INSERT INTO DadosEvasao (lote, praca, sentido, dataEvasao, horas, tipo, categoria, tipoPagamento, tipoCampo, quantidade, valor) 
+        INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, tipo, categoria, tipoPagamento, tipoCampo, quantidade, valor) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """;
 
+        System.out.println("inserindo novo dadosEvasao");
         try (Connection con = ConexaoBanco.getConnection();
              PreparedStatement stmtInserir = con.prepareStatement(sql)) {
             Integer contador = 0;
@@ -80,6 +79,8 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
 
                 stmtInserir.executeUpdate();
                 contador++;
+
+                System.out.println("foi adicionado novo dadosEvasao" + contador);
             }
 
             System.out.println("Inserção concluída! Total: " + contador + " registros");
