@@ -15,7 +15,7 @@ public class main {
         String NOME_BUCKET = System.getenv("NOME_BUCKET");
 
         DadosEvasaoHandler dadosEvasaoHandler = new DadosEvasaoHandler();
-        dadosEvasaoHandler.carregarPlanilha("/tmp/L23_01-2025(1).xlsx");
+        dadosEvasaoHandler.carregarPlanilha("/tmp/L23_01-2025.xlsx");
         dadosEvasaoHandler.processarDados();
 
         dadosEvasaoHandler.inserirDadosEvasao(dadosEvasaoHandler.getDadosEvasaos());

@@ -2,6 +2,7 @@ package com.gabriel.services;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.xmlbeans.impl.xb.ltgfmt.TestCase;
 
@@ -18,10 +19,11 @@ public abstract class LeitorPlanilha {
     public void carregarPlanilha(String filePath) {
         try {
             System.out.println("Carregando planilha " + filePath);
-        Path file = Path.of(filePath);
-        InputStream arquivo = Files.newInputStream(file);
 
-        workbook = new XSSFWorkbook(arquivo);
+            Path file = Path.of(filePath);
+            InputStream arquivo = Files.newInputStream(file);
+
+            workbook = new XSSFWorkbook(arquivo);
     }
         catch (IOException e) {
         e.printStackTrace();

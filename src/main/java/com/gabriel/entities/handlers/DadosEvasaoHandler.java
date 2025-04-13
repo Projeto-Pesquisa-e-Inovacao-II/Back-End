@@ -3,6 +3,7 @@ package com.gabriel.entities.handlers;
 import com.gabriel.entities.DadosEvasao;
 import com.gabriel.infra.ConexaoBanco;
 import com.gabriel.services.LeitorPlanilha;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,6 +23,7 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
     @Override
     public void processarDados() {
         Sheet sheet = workbook.getSheetAt(0);
+        DataFormatter formatter = new DataFormatter();
 
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
@@ -30,17 +32,21 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
             }
 
             try {
-                Integer colLote = (int) row.getCell(0).getNumericCellValue();
-                Integer colPraca =  (int) row.getCell(1).getNumericCellValue();
-                Integer colSentido =  (int) row.getCell(2).getNumericCellValue();
-                Date colData = row.getCell(3).getDateCellValue();
-                Integer colHora =  (int) row.getCell(4).getNumericCellValue();
-                Integer colTipo =  (int) row.getCell(5).getNumericCellValue();
-                Integer colCategoria =  (int) row.getCell(6).getNumericCellValue();
-                Integer colTipoPagamento =  (int) row.getCell(7).getNumericCellValue();
-                Integer colTipoCampo =  (int) row.getCell(8).getNumericCellValue();
-                Integer colQuantidade =  (int) row.getCell(9).getNumericCellValue();
-                Double colValor = row.getCell(10).getNumericCellValue();
+                Integer colLote = Integer.parseInt(formatter.formatCellValue(row.getCell(0)));
+                Integer colPraca =  Integer.parseInt(formatter.formatCellValue(row.getCell(1)));
+                Integer colSentido =  Integer.parseInt(formatter.formatCellValue(row.getCell(2)));
+
+                String dateStr = formatter.formatCellValue(row.getCell(3)).replace('-', '/');
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+                Date colData = sdf.parse(dateStr);
+
+                Integer colHora =  Integer.parseInt(formatter.formatCellValue(row.getCell(4)));
+                Integer colTipo =  Integer.parseInt(formatter.formatCellValue(row.getCell(5)));
+                Integer colCategoria =  Integer.parseInt(formatter.formatCellValue(row.getCell(6)));
+                Integer colTipoPagamento =  Integer.parseInt(formatter.formatCellValue(row.getCell(7)));
+                Integer colTipoCampo =  Integer.parseInt(formatter.formatCellValue(row.getCell(8)));
+                Integer colQuantidade =  Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
+                Double colValor = Double.parseDouble(formatter.formatCellValue(row.getCell(10)).replace(',', '.'));
 
                 DadosEvasao dadosEvasao = new DadosEvasao(colLote, colPraca, colSentido, colData, colHora, colTipo, colCategoria, colTipoPagamento, colTipoCampo, colQuantidade, colValor);
                 dadosEvasaos.add(dadosEvasao);
