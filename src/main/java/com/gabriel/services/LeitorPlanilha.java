@@ -17,6 +17,8 @@ public abstract class LeitorPlanilha {
     protected Workbook workbook;
 
     public void carregarPlanilha(String filePath) {
+        IOUtils.setByteArrayMaxOverride(200_000_000);
+
         try {
             System.out.println("Carregando planilha " + filePath);
 
