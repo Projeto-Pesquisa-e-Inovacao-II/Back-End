@@ -1,23 +1,21 @@
-package com.gabriel.entities.handlers;
+package com.gabriel.services;
 
 import com.gabriel.entities.DadosEvasao;
 import com.gabriel.infra.ConexaoBanco;
-import com.gabriel.services.LeitorPlanilha;
+import com.gabriel.infra.LeitorPlanilha;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class DadosEvasaoHandler extends LeitorPlanilha {
+public class DadosEvasaoService extends LeitorPlanilha {
     List<DadosEvasao> dadosEvasaos = new ArrayList<>();
 
     @Override
@@ -25,9 +23,10 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
         Sheet sheet = workbook.getSheetAt(0);
         DataFormatter formatter = new DataFormatter();
 
+        System.out.println("processar dadosEvasao começou");
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
-                System.out.println("cabecalho");
+                System.out.println("excluindo cabecalho");
                 continue;
             }
 
@@ -48,24 +47,25 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
                 Integer colQuantidade =  Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
                 Double colValor = Double.parseDouble(formatter.formatCellValue(row.getCell(10)).replace(',', '.'));
 
-                DadosEvasao dadosEvasao = new DadosEvasao(colLote, colPraca, colSentido, colData, colHora, colTipo, colCategoria, colTipoPagamento, colTipoCampo, colQuantidade, colValor);
+                DadosEvasao dadosEvasao = new DadosEvasao(colLote, colPraca, colSentido, colData, colHora, colCategoria, colTipoCampo, colQuantidade, colValor);
                 dadosEvasaos.add(dadosEvasao);
-                System.out.println("dadosEvasao finalizou");
             }  catch (Exception rowException) {
                 System.out.println("Erro ao processar a linha: " + row.getRowNum() + " | " + rowException);
             }
 
         }
+        System.out.println("processar dadosEvasao finalizou");
+
     }
 
-    public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao) {
+    public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
         System.out.println("iniciando novo dadosEvasao");
         String sql = """
-        INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, tipo, categoria, tipoPagamento, tipoCampo, quantidade, valor) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, categoria, tpCampo, quantidade, valor, Empresa_idEmpresa) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """;
 
-        System.out.println("inserindo novo dadosEvasao");
+        System.out.println("Inserindo novos dados de " + arquivo);
         try (Connection con = ConexaoBanco.getConnection();
              PreparedStatement stmtInserir = con.prepareStatement(sql)) {
             Integer contador = 0;
@@ -76,20 +76,21 @@ public class DadosEvasaoHandler extends LeitorPlanilha {
                 stmtInserir.setInt(3, d.getSentido());
                 stmtInserir.setDate(4, new java.sql.Date(d.getDataEvasao().getTime()));
                 stmtInserir.setInt(5, d.getHoras());
-                stmtInserir.setInt(6, d.getTipo());
-                stmtInserir.setInt(7, d.getCategoria());
-                stmtInserir.setInt(8, d.getTipoPagamento());
-                stmtInserir.setInt(9, d.getTipoCampo());
-                stmtInserir.setInt(10, d.getQuantidade());
-                stmtInserir.setDouble(11, d.getValor());
+                stmtInserir.setInt(6, d.getCategoria());
+                stmtInserir.setInt(7, d.getTipoCampo());
+                stmtInserir.setInt(8, d.getQuantidade());
+                stmtInserir.setDouble(9, d.getValor());
+                stmtInserir.setInt(10, concessionaria);
 
                 stmtInserir.executeUpdate();
                 contador++;
 
-                System.out.println("foi adicionado novo dadosEvasao" + contador);
+
             }
 
             System.out.println("Inserção concluída! Total: " + contador + " registros");
+
+            dadosEvasaos = new ArrayList<>();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
