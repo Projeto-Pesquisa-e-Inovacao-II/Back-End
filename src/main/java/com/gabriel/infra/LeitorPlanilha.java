@@ -1,17 +1,13 @@
-package com.gabriel.services;
+package com.gabriel.infra;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.xmlbeans.impl.xb.ltgfmt.TestCase;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 public abstract class LeitorPlanilha {
     protected Workbook workbook;

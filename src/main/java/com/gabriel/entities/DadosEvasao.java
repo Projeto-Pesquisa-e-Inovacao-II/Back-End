@@ -1,14 +1,6 @@
 package com.gabriel.entities;
 
-import com.gabriel.entities.handlers.DadosEvasaoHandler;
-import com.gabriel.infra.ConexaoBanco;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Date;
-import java.util.List;
 
 public class DadosEvasao {
     private Integer lote;
@@ -16,9 +8,7 @@ public class DadosEvasao {
     private Integer sentido; // norte, sul, leste oeste
     private Date dataEvasao;
     private Integer horas;
-    private Integer tipo; // tipo da pista
     private Integer categoria; // veiculo + eixos
-    private Integer tipoPagamento; // evasao, dinheiro, tag, semiautomatico etc
     private Integer tipoCampo; // isenção, valido, evasao
     private Integer quantidade;
     private Double valor;
@@ -26,15 +16,13 @@ public class DadosEvasao {
     public DadosEvasao() {
     }
 
-    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas, Integer tipo, Integer categoria, Integer tipoPagamento, Integer tipoCampo, Integer quantidade, Double valor) {
+    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas, Integer categoria, Integer tipoCampo, Integer quantidade, Double valor) {
         this.lote = lote;
         this.praca = praca;
         this.sentido = sentido;
         this.dataEvasao = dataEvasao;
         this.horas = horas;
-        this.tipo = tipo;
         this.categoria = categoria;
-        this.tipoPagamento = tipoPagamento;
         this.tipoCampo = tipoCampo;
         this.quantidade = quantidade;
         this.valor = valor;
@@ -80,28 +68,12 @@ public class DadosEvasao {
         this.horas = horas;
     }
 
-    public Integer getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(Integer tipo) {
-        this.tipo = tipo;
-    }
-
     public Integer getCategoria() {
         return categoria;
     }
 
     public void setCategoria(Integer categoria) {
         this.categoria = categoria;
-    }
-
-    public Integer getTipoPagamento() {
-        return tipoPagamento;
-    }
-
-    public void setTipoPagamento(Integer tipoPagamento) {
-        this.tipoPagamento = tipoPagamento;
     }
 
     public Integer getTipoCampo() {
