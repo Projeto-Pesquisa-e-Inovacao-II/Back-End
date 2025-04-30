@@ -82,12 +82,12 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 stmtInserir.setDouble(9, d.getValor());
                 stmtInserir.setInt(10, concessionaria);
 
-                stmtInserir.executeUpdate();
+                stmtInserir.addBatch();
                 contador++;
 
 
             }
-
+            stmtInserir.executeBatch();
             System.out.println("Inserção concluída! Total: " + contador + " registros");
 
             dadosEvasaos = new ArrayList<>();

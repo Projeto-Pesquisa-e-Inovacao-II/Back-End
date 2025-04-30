@@ -23,9 +23,9 @@ public class main {
                 Path doesFileExist;
                 String filePath = "";
                 if(conc < 10) {
-                    doesFileExist = Path.of("D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\L0" + conc + "_" + year + ".xlsx"); // L0" + conc + "_" + year + ".xlsx"
+                    doesFileExist = Path.of("/home/gabriel/Documentos/2sem2/dados/dados_juntos/L0" + conc + "_" + year + ".xlsx"); // L0" + conc + "_" + year + ".xlsx"
                 } else {
-                    doesFileExist = Path.of("D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\L" + conc + "_" + year + ".xlsx"); // L" + conc + "_" + year + ".xlsx"
+                    doesFileExist = Path.of("/home/gabriel/Documentos/2sem2/dados/dados_juntos/L" + conc + "_" + year + ".xlsx"); // L" + conc + "_" + year + ".xlsx"
                 }
 
                 if(Files.exists(doesFileExist)) {
@@ -47,14 +47,14 @@ public class main {
 
                         if(conc < 10) {
                             if (j < 10) {
-                                doesSubfilesExist = Path.of("D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\L0" + conc +"_0" + j + "-" + year + ".xlsx"); //L0" + conc +"_0" + j + "-" + year + ".xlsx"
+                                doesSubfilesExist = Path.of("/home/gabriel/Documentos/2sem2/dados/dados_juntos/L0" + conc +"_0" + j + "-" + year + ".xlsx"); //L0" + conc +"_0" + j + "-" + year + ".xlsx"
                             } else {
-                                doesSubfilesExist = Path.of("D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\L0" + conc +"_" + j + "-" + year + ".xlsx");//L0" + conc +"_" + j + "-" + year + ".xlsx"
+                                doesSubfilesExist = Path.of("/home/gabriel/Documentos/2sem2/dados/dados_juntos/L0" + conc +"_" + j + "-" + year + ".xlsx");//L0" + conc +"_" + j + "-" + year + ".xlsx"
                             }
 
 
                         } else {
-                            doesSubfilesExist = Path.of("D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\L" + conc +"_0" + j + "-" + year + ".xlsx");
+                            doesSubfilesExist = Path.of("/home/gabriel/Documentos/2sem2/dados/dados_juntos/L" + conc +"_0" + j + "-" + year + ".xlsx");
                         }
 
 
