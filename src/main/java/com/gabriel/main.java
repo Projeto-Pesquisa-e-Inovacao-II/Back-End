@@ -22,21 +22,22 @@ public class main {
     public static void main(String[] args) throws IOException {
         S3Client s3Client = new S3Provider().getS3Client();
         String bucketName = "dados-dataway-dev";
-        String filePath = "D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\L27_02-2024.xlsx";
+        String filePath = "/home/ubuntu/Dados/L27_02-2024.xlsx";
 
         try {
             logger.info("Iniciando upload de arquivo para S3...");
             logger.debug("Nome do bucket: {}", bucketName);
-            String uniqueFileName = UUID.randomUUID().toString();
+            File file = new File(filePath);
+
+            String fileName = file.getName();
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(uniqueFileName)
+                    .key(fileName)
                     .build();
 
-            File file = new File(filePath);
             s3Client.putObject(putObjectRequest, RequestBody.fromFile(file));
 
-            logger.info("Arquivo '" + file.getName() + "' enviado com sucesso com o nome: " + uniqueFileName);
+            logger.info("Arquivo '" + fileName + "' enviado com sucesso com o nome: " + fileName);
         } catch (S3Exception e) {
             logger.error("Erro ao fazer upload do arquivo: " + e.getMessage());
         }
