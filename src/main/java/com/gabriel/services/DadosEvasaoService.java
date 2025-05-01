@@ -6,6 +6,8 @@ import com.gabriel.infra.LeitorPlanilha;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,17 +18,19 @@ import java.util.Date;
 import java.util.List;
 
 public class DadosEvasaoService extends LeitorPlanilha {
+    private static final Logger logger = LoggerFactory.getLogger(DadosEvasaoService.class);
     List<DadosEvasao> dadosEvasaos = new ArrayList<>();
 
     @Override
     public void processarDados() {
+        logger.info("Iniciando processamento de dados de evasão");
         Sheet sheet = workbook.getSheetAt(0);
         DataFormatter formatter = new DataFormatter();
+        Integer linhasProcessadas = 0;
 
-        System.out.println("processar dadosEvasao começou");
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
-                System.out.println("excluindo cabecalho");
+                logger.debug("Ignorando cabeçalho");
                 continue;
             }
 
@@ -40,32 +44,32 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 Date colData = sdf.parse(dateStr);
 
                 Integer colHora =  Integer.parseInt(formatter.formatCellValue(row.getCell(4)));
-                Integer colTipo =  Integer.parseInt(formatter.formatCellValue(row.getCell(5)));
                 Integer colCategoria =  Integer.parseInt(formatter.formatCellValue(row.getCell(6)));
-                Integer colTipoPagamento =  Integer.parseInt(formatter.formatCellValue(row.getCell(7)));
                 Integer colTipoCampo =  Integer.parseInt(formatter.formatCellValue(row.getCell(8)));
                 Integer colQuantidade =  Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
                 Double colValor = Double.parseDouble(formatter.formatCellValue(row.getCell(10)).replace(',', '.'));
 
                 DadosEvasao dadosEvasao = new DadosEvasao(colLote, colPraca, colSentido, colData, colHora, colCategoria, colTipoCampo, colQuantidade, colValor);
                 dadosEvasaos.add(dadosEvasao);
-            }  catch (Exception rowException) {
-                System.out.println("Erro ao processar a linha: " + row.getRowNum() + " | " + rowException);
+                linhasProcessadas++;
+                logger.trace("Linha {} processada: {}", row.getRowNum(), dadosEvasao);
+            }  catch (Exception e) {
+                logger.error("Erro ao processar linha {} – ignorando (motivo: {})", row.getRowNum(), e.getMessage());
             }
 
         }
-        System.out.println("processar dadosEvasao finalizou");
+        logger.info("Processamento concluído: {} linhas válidas",
+                linhasProcessadas);
 
     }
 
     public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
-        System.out.println("iniciando novo dadosEvasao");
+        logger.info("Iniciando inserção de {} registros no banco (arquivo: {})", dadosEvasao.size(), arquivo);
         String sql = """
         INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, categoria, tpCampo, quantidade, valor, Empresa_idEmpresa) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """;
 
-        System.out.println("Inserindo novos dados de " + arquivo);
         try (Connection con = ConexaoBanco.getConnection();
              PreparedStatement stmtInserir = con.prepareStatement(sql)) {
             Integer contador = 0;
@@ -85,13 +89,17 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 stmtInserir.executeUpdate();
                 contador++;
 
+                if (contador % 1000 == 0) {
+                    logger.debug("{} registros inseridos até agora…", contador);
+                }
 
             }
 
-            System.out.println("Inserção concluída! Total: " + contador + " registros");
+            logger.info("Inserção concluída com sucesso! Total de registros inseridos: {}", contador);
+            dadosEvasaos.clear();
 
-            dadosEvasaos = new ArrayList<>();
         } catch (SQLException e) {
+            logger.error("Erro ao inserir dados de evasão no banco", e);
             throw new RuntimeException(e);
         }
     }

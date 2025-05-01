@@ -19,7 +19,7 @@ public class main {
 
         DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
 
-        String filePath = "/home/gabriel/Documentos/2sem2/dados/dados_juntos/L03_01-2024.xlsx";
+        String filePath = "D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\L03_01-2024.xlsx";
 
         logger.info("Carregando planilha: {}", filePath);
         dadosEvasaoService.carregarPlanilha(filePath);
