@@ -20,10 +20,22 @@ public class main {
     private static final Logger logger = LoggerFactory.getLogger(main.class);
 
     public static void main(String[] args) throws IOException {
+        logger.info("Iniciando aplicação...");
+
+        DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
+
+        String filePath = "/home/ubuntu/Dados/L27_02-2024.xlsx";
+        logger.info("Carregando planilha: {}", filePath);
+        dadosEvasaoService.carregarPlanilha(filePath);
+
+        logger.info("Processando dados...");
+        dadosEvasaoService.processarDados();
+
+        logger.info("Inserindo dados de evasão...");
+        dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), 3, filePath);
+
         S3Client s3Client = new S3Provider().getS3Client();
         String bucketName = "dados-dataway-dev";
-        String filePath = "/home/ubuntu/Dados/L27_02-2024.xlsx";
-
         try {
             logger.info("Iniciando upload de arquivo para S3...");
             logger.debug("Nome do bucket: {}", bucketName);
@@ -41,21 +53,6 @@ public class main {
         } catch (S3Exception e) {
             logger.error("Erro ao fazer upload do arquivo: " + e.getMessage());
         }
-
-
-        logger.info("Iniciando aplicação...");
-
-        DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
-
-
-        logger.info("Carregando planilha: {}", filePath);
-        dadosEvasaoService.carregarPlanilha(filePath);
-
-        logger.info("Processando dados...");
-        dadosEvasaoService.processarDados();
-
-        logger.info("Inserindo dados de evasão...");
-        dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), 3, filePath);
 
 
         logger.info("Processo concluído com sucesso.");
