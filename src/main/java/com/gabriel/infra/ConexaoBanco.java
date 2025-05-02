@@ -7,9 +7,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConexaoBanco {
-    private static final String URL = System.getenv("BD_URL");
-    private static final String USER = System.getenv("BD_USER");
-    private static final String PASSWORD = System.getenv("BD_PASSWORD");
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String URL = dotenv.get("BD_URL");
+    private static final String USER = dotenv.get("BD_USER");
+    private static final String PASSWORD = dotenv.get("BD_PASSWORD");
     
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
