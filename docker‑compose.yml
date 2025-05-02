@@ -17,8 +17,10 @@ services:
     container_name: dataway-backend
     depends_on:
       - mysql
-    env_file:
-      - .env
+    environment:
+      - BD_URL=jdbc:mysql://mysql:3306/dataway
+      - BD_USER=root
+      - BD_PASSWORD=urubu100
 
 volumes:
   db_data:
