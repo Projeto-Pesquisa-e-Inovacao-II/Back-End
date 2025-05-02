@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: dataway-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: urubu100
+      MYSQL_DATABASE: dataway
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  backend:
+    image: andradegabriel05/dataway-mysql:latest
+    container_name: dataway-backend
+    depends_on:
+      - mysql
+    env_file:
+      - .env
+
+volumes:
+  db_data:
