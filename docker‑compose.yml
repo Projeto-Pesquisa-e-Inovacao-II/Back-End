@@ -13,14 +13,14 @@ services:
       - "3306:3306"
 
   backend:
-    image: andradegabriel05/dataway-mysql:latest
+    image: andradegabriel05/dataway-backend:latest
     container_name: dataway-backend
     depends_on:
       - mysql
     environment:
-      - BD_URL=jdbc:mysql://mysql:3306/dataway
-      - BD_USER=root
-      - BD_PASSWORD=urubu100
-
+      BD_URL: "jdbc:mysql://mysql:3306/dataway"
+      BD_USER: "root"
+      BD_PASSWORD: "urubu100"
+      
 volumes:
   db_data:
