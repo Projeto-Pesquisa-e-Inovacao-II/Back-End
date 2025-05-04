@@ -24,7 +24,7 @@ public class main {
 
         DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
 
-        String filePath = "/app/Dados/L27_02-2024.xlsx";
+        String filePath = "/home/ubuntu/Dados/L27_02-2024.xlsx";
         logger.info("Carregando planilha: {}", filePath);
         dadosEvasaoService.carregarPlanilha(filePath);
 
