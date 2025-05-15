@@ -3,10 +3,19 @@ package com.gabriel.services;
 import com.gabriel.entities.DadosEvasao;
 import com.gabriel.infra.ConexaoBanco;
 import com.gabriel.infra.LeitorPlanilha;
+import com.gabriel.infra.S3Provider;
+import com.gabriel.main;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,16 +26,18 @@ import java.util.List;
 
 public class DadosEvasaoService extends LeitorPlanilha {
     List<DadosEvasao> dadosEvasaos = new ArrayList<>();
+    private static final Logger logger = LoggerFactory.getLogger(main.class);
 
     @Override
     public void processarDados() {
+        logger.info("Iniciando processamento de dados de evasão");
         Sheet sheet = workbook.getSheetAt(0);
         DataFormatter formatter = new DataFormatter();
+        Integer linhasProcessadas = 0;
 
-        System.out.println("processar dadosEvasao começou");
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
-                System.out.println("excluindo cabecalho");
+                logger.debug("Ignorando cabeçalho");
                 continue;
             }
 
@@ -40,26 +51,27 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 Date colData = sdf.parse(dateStr);
 
                 Integer colHora =  Integer.parseInt(formatter.formatCellValue(row.getCell(4)));
-                Integer colTipo =  Integer.parseInt(formatter.formatCellValue(row.getCell(5)));
                 Integer colCategoria =  Integer.parseInt(formatter.formatCellValue(row.getCell(6)));
-                Integer colTipoPagamento =  Integer.parseInt(formatter.formatCellValue(row.getCell(7)));
                 Integer colTipoCampo =  Integer.parseInt(formatter.formatCellValue(row.getCell(8)));
                 Integer colQuantidade =  Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
                 Double colValor = Double.parseDouble(formatter.formatCellValue(row.getCell(10)).replace(',', '.'));
 
                 DadosEvasao dadosEvasao = new DadosEvasao(colLote, colPraca, colSentido, colData, colHora, colCategoria, colTipoCampo, colQuantidade, colValor);
                 dadosEvasaos.add(dadosEvasao);
+                linhasProcessadas++;
             }  catch (Exception rowException) {
-                System.out.println("Erro ao processar a linha: " + row.getRowNum() + " | " + rowException);
+                logger.error("Erro ao processar linha {} – ignorando (motivo: {})", row.getRowNum(), rowException.getMessage());
             }
 
         }
-        System.out.println("processar dadosEvasao finalizou");
+        logger.info("Processamento concluído: {} linhas válidas",
+                linhasProcessadas);
 
     }
 
     public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
-        System.out.println("iniciando novo dadosEvasao");
+        logger.info("Iniciando inserção de {} registros no banco (arquivo: {})", dadosEvasao.size(), arquivo);
+
         String sql = """
         INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, categoria, tpCampo, quantidade, valor, Empresa_idEmpresa) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -85,17 +97,42 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 stmtInserir.executeUpdate();
                 contador++;
 
-
+                if (contador % 1000 == 0) {
+                    logger.debug("{} registros inseridos até agora…", contador);
+                }
             }
 
-            System.out.println("Inserção concluída! Total: " + contador + " registros");
+            logger.info("Inserção concluída com sucesso! Total de registros inseridos: {}", contador);
+            dadosEvasaos.clear();
 
-            dadosEvasaos = new ArrayList<>();
         } catch (SQLException e) {
+            logger.error("Erro ao inserir dados de evasão no banco", e);
             throw new RuntimeException(e);
         }
     }
 
+    public void sendFileToS3(String filePath) {
+        S3Client s3Client = new S3Provider().getS3Client();
+        String bucketName = "dados-dataway-dev";
+        try {
+            logger.info("Iniciando upload de arquivo para S3...");
+            logger.debug("Nome do bucket: {}", bucketName);
+            File file = new File(filePath);
+
+            String fileName = file.getName();
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromFile(file));
+
+            logger.info("Arquivo '" + fileName + "' enviado com sucesso com o nome: " + fileName);
+        } catch (S3Exception e) {
+            logger.error("Erro ao fazer upload do arquivo: " + e.getMessage());
+        }
+
+    }
 
 
     public List<DadosEvasao> getDadosEvasaos() {
