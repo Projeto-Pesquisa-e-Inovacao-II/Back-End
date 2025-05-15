@@ -4,7 +4,7 @@ import com.gabriel.entities.DadosEvasao;
 import com.gabriel.infra.ConexaoBanco;
 import com.gabriel.infra.LeitorPlanilha;
 import com.gabriel.infra.S3Provider;
-import com.gabriel.main;
+import com.gabriel.Main;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -26,7 +26,7 @@ import java.util.List;
 
 public class DadosEvasaoService extends LeitorPlanilha {
     List<DadosEvasao> dadosEvasaos = new ArrayList<>();
-    private static final Logger logger = LoggerFactory.getLogger(main.class);
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     @Override
     public void processarDados() {
