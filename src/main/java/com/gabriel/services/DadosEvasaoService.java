@@ -80,7 +80,10 @@ public class DadosEvasaoService extends LeitorPlanilha {
         System.out.println("Inserindo novos dados de " + arquivo);
         try (Connection con = ConexaoBanco.getConnection();
              PreparedStatement stmtInserir = con.prepareStatement(sql)) {
+
             Integer contador = 0;
+            final int limiteLote = 1000;
+            con.setAutoCommit(false);
 
             for (DadosEvasao d : dadosEvasao) {
                 stmtInserir.setInt(1, d.getLote());
@@ -94,12 +97,20 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 stmtInserir.setDouble(9, d.getValor());
                 stmtInserir.setInt(10, concessionaria);
 
-                stmtInserir.executeUpdate();
+                stmtInserir.addBatch();
                 contador++;
 
-                if (contador % 1000 == 0) {
+                if (contador % limiteLote == 0) {
+                    stmtInserir.executeBatch();
+                    con.commit();
+                    stmtInserir.clearBatch();
                     logger.debug("{} registros inseridos até agora…", contador);
                 }
+            }
+
+            if (contador % limiteLote != 0) {
+                stmtInserir.executeBatch();
+                con.commit();
             }
 
             logger.info("Inserção concluída com sucesso! Total de registros inseridos: {}", contador);
