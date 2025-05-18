@@ -42,7 +42,7 @@ public class Main {
 //
 //                    System.out.println("não");
 
-                    for (int j = 3; j <= 12; j++) {
+                    for (int j = 1; j <= 12; j++) {
                         Path doesSubfilesExist;
 
                         if(conc < 10) {
