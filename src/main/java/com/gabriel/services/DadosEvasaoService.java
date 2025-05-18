@@ -86,18 +86,23 @@ public class DadosEvasaoService extends LeitorPlanilha {
             con.setAutoCommit(false);
 
             for (DadosEvasao d : dadosEvasao) {
-                stmtInserir.setInt(1, d.getLote());
-                stmtInserir.setInt(2, d.getPraca());
-                stmtInserir.setInt(3, d.getSentido());
-                stmtInserir.setDate(4, new java.sql.Date(d.getDataEvasao().getTime()));
-                stmtInserir.setInt(5, d.getHoras());
-                stmtInserir.setInt(6, d.getCategoria());
-                stmtInserir.setInt(7, d.getTipoCampo());
-                stmtInserir.setInt(8, d.getQuantidade());
-                stmtInserir.setDouble(9, d.getValor());
-                stmtInserir.setInt(10, concessionaria);
+                try {
+                    stmtInserir.setInt(1, d.getLote());
+                    stmtInserir.setInt(2, d.getPraca());
+                    stmtInserir.setInt(3, d.getSentido());
+                    stmtInserir.setDate(4, new java.sql.Date(d.getDataEvasao().getTime()));
+                    stmtInserir.setInt(5, d.getHoras());
+                    stmtInserir.setInt(6, d.getCategoria());
+                    stmtInserir.setInt(7, d.getTipoCampo());
+                    stmtInserir.setInt(8, d.getQuantidade());
+                    stmtInserir.setDouble(9, d.getValor());
+                    stmtInserir.setInt(10, concessionaria);
 
-                stmtInserir.addBatch();
+                    stmtInserir.addBatch();
+                } catch (Exception e) {
+                    logger.warn("erro na linha {}: {}. Dado não inserido", d, e.getMessage());
+                    continue;
+                }
                 contador++;
 
                 if (contador % limiteLote == 0) {

@@ -3,7 +3,7 @@ package com.gabriel.enums;
 import java.nio.file.Path;
 
 public enum FilePath {
-    FILE_PATH("/home/ubuntu/Dados/");
+    FILE_PATH("D:\\Downloads\\reactApp\\project2Sem\\dados\\dados_xlsx\\");
 
     private final String filePath;
 
