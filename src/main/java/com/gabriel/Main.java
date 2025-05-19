@@ -54,11 +54,17 @@ public class Main {
 
 
                         } else {
-                            doesSubfilesExist = Path.of(base + "L" + conc +"_0" + j + "-" + year + ".xlsx");
+                            if (j < 10) {
+                                doesSubfilesExist = Path.of(base + "L" + conc +"_0" + j + "-" + year + ".xlsx"); //L0" + conc +"_0" + j + "-" + year + ".xlsx"
+                            } else {
+                                doesSubfilesExist = Path.of(base + "L" + conc +"_" + j + "-" + year + ".xlsx");//L0" + conc +"_" + j + "-" + year + ".xlsx"
+                            }
+                            System.out.println(doesSubfilesExist);
                         }
 
 
                         if(Files.exists(doesSubfilesExist)) {
+                            System.out.println("existe");
                             filePath = doesSubfilesExist.toString();
 
                             dadosEvasaoService.carregarPlanilha(filePath);
