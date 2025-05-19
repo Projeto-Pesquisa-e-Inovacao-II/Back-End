@@ -16,7 +16,7 @@ public class Main {
         String base = FilePath.FILE_PATH.getFilePath();
 
         //this is actually terrible, but it works
-        for (int conc = 23; conc < 33; conc++) {
+        for (int conc = 1; conc < 33; conc++) {
 
 //            year = 2024;
 //            for (int i = 1; i <= 10; i++) {
@@ -42,7 +42,7 @@ public class Main {
 //
 //                    System.out.println("não");
 
-                    for (int j = 10; j <= 12; j++) {
+                    for (int j = 1; j <= 12; j++) {
                         Path doesSubfilesExist;
 
                         if(conc < 10) {
@@ -54,18 +54,24 @@ public class Main {
 
 
                         } else {
-                            doesSubfilesExist = Path.of(base + "L" + conc +"_0" + j + "-" + year + ".xlsx");
+                            if (j < 10) {
+                                doesSubfilesExist = Path.of(base + "L" + conc +"_0" + j + "-" + year + ".xlsx"); //L0" + conc +"_0" + j + "-" + year + ".xlsx"
+                            } else {
+                                doesSubfilesExist = Path.of(base + "L" + conc +"_" + j + "-" + year + ".xlsx");//L0" + conc +"_" + j + "-" + year + ".xlsx"
+                            }
+                            System.out.println(doesSubfilesExist);
                         }
 
 
                         if(Files.exists(doesSubfilesExist)) {
+                            System.out.println("existe");
                             filePath = doesSubfilesExist.toString();
 
                             dadosEvasaoService.carregarPlanilha(filePath);
 
                             dadosEvasaoService.processarDados();
                             dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), conc, filePath);
-//                            dadosEvasaoService.sendFileToS3(filePath);
+                            dadosEvasaoService.sendFileToS3(filePath);
                         }
                     }
 
