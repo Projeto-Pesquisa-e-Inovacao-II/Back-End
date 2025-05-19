@@ -16,7 +16,7 @@ public class Main {
         String base = FilePath.FILE_PATH.getFilePath();
 
         //this is actually terrible, but it works
-        for (int conc = 1; conc < 33; conc++) {
+        for (int conc = 23; conc < 33; conc++) {
 
 //            year = 2024;
 //            for (int i = 1; i <= 10; i++) {
@@ -42,7 +42,7 @@ public class Main {
 //
 //                    System.out.println("não");
 
-                    for (int j = 1; j <= 12; j++) {
+                    for (int j = 10; j <= 12; j++) {
                         Path doesSubfilesExist;
 
                         if(conc < 10) {
@@ -65,7 +65,7 @@ public class Main {
 
                             dadosEvasaoService.processarDados();
                             dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), conc, filePath);
-                            dadosEvasaoService.sendFileToS3(filePath);
+//                            dadosEvasaoService.sendFileToS3(filePath);
                         }
                     }
 
