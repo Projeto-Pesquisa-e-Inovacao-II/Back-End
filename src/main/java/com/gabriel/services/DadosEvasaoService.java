@@ -129,7 +129,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
     public void sendFileToS3(String filePath) {
         S3Client s3Client = new S3Provider().getS3Client();
-        String bucketName = "dados-dataway-dev";
+        String bucketName = "s3-dataway-bucket";
         try {
             logger.info("Iniciando upload de arquivo para S3...");
             logger.debug("Nome do bucket: {}", bucketName);
