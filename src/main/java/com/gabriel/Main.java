@@ -16,7 +16,7 @@ public class Main {
         String base = FilePath.FILE_PATH.getFilePath();
 
         //this is actually terrible, but it works
-        for (int conc = 1; conc < 33; conc++) {
+        for (int conc = 22; conc < 33; conc++) {
 
 //            year = 2024;
 //            for (int i = 1; i <= 10; i++) {
