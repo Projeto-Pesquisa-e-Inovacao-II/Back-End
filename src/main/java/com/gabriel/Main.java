@@ -91,37 +91,38 @@ public class Main {
 //                    }
 
 
-            S3Client s3Client = new S3Provider().getS3Client();
-            String bucketName = "s3-dataway-bucket";
-            File flag = new File("/app/flag.txt");
+        S3Client s3Client = new S3Provider().getS3Client();
+        String bucketName = "s3-dataway-bucket";
+        File flag = new File("/app/flag/flag.txt");
 
-            ListObjectsRequest listObjects = ListObjectsRequest.builder()
+        // ⛔ Verifica se já foi executado
+        if (flag.exists()) {
+            logger.info("Dados já inseridos anteriormente. Encerrando.");
+            return;
+        }
+
+        ListObjectsRequest listObjects = ListObjectsRequest.builder()
+                .bucket(bucketName)
+                .build();
+
+        List<S3Object> objects = s3Client.listObjects(listObjects).contents();
+        for (S3Object object : objects) {
+            String key = object.key();
+            logger.info("Baixando e processando o arquivo: {}", key);
+
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
+                    .key(key)
                     .build();
 
-            List<S3Object> objects = s3Client.listObjects(listObjects).contents();
-            for (S3Object object : objects) {
-                String key = object.key();
-                logger.info("Baixando e processando o arquivo: {}", key);
+            InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
+            dadosEvasaoService.carregarPlanilha(objectContent, key);
+            dadosEvasaoService.processarDados();
+            dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), objectContent);
+        }
 
-                GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(key)
-                        .build();
-
-                if(flag.exists()) {
-                    logger.info("Dados já inseridos anteriormente. Encerrando.");
-                    continue;
-                }
-
-                InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
-                dadosEvasaoService.carregarPlanilha(objectContent, key);
-                dadosEvasaoService.processarDados();
-
-                dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), objectContent);
-                Files.write(Paths.get("/app/flag.txt"), "inserido".getBytes());
-            }
-
+        // ✅ Cria flag apenas após todo processamento
+        Files.write(Paths.get("/app/flag/flag.txt"), "inserido".getBytes());
 
 
 //                }
