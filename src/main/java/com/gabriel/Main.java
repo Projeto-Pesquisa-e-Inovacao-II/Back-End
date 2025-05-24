@@ -111,7 +111,7 @@ public class Main {
 
                 if(flag.exists()) {
                     logger.info("Dados já inseridos anteriormente. Encerrando.");
-                    return;
+                    continue;
                 }
 
                 InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
