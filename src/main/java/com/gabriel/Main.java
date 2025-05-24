@@ -67,8 +67,8 @@ public class Main {
 
                 } catch (Exception e) {
                     logger.error("Erro ao processar arquivo {}: {}", key, e.getMessage(), e);
-                    // Dependendo da lógica, pode continuar ou parar a execução.
-                    // continue;
+                    e.printStackTrace();
+                    // continue; // opcional: se quiser continuar mesmo com erro em algum arquivo
                 }
             }
 
@@ -79,8 +79,10 @@ public class Main {
 
         } catch (IOException e) {
             logger.error("Erro de IO no processamento principal: {}", e.getMessage(), e);
+            e.printStackTrace();
         } catch (Exception e) {
             logger.error("Erro inesperado: {}", e.getMessage(), e);
+            e.printStackTrace();
         }
     }
 }
