@@ -90,7 +90,7 @@ public class Main {
 //                    }
 
             S3Client s3Client = new S3Provider().getS3Client();
-            String bucketName = "dados-dataway-dev";
+            String bucketName = "s3-dataway-bucket";
 
             ListObjectsRequest listObjects = ListObjectsRequest.builder()
                     .bucket(bucketName)
