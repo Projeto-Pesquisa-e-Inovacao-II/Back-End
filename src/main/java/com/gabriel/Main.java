@@ -3,6 +3,8 @@ package com.gabriel;
 import com.gabriel.enums.FilePath;
 import com.gabriel.infra.S3Provider;
 import com.gabriel.services.DadosEvasaoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -19,6 +21,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws IOException {
         DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
+        Logger logger = LoggerFactory.getLogger(Main.class);
 
 //        Integer year = 2024;
 
@@ -95,9 +98,12 @@ public class Main {
 
             List<S3Object> objects = s3Client.listObjects(listObjects).contents();
             for (S3Object object : objects) {
+                String key = object.key();
+                logger.info("Baixando e processando o arquivo: {}", key);
+
                 GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                         .bucket(bucketName)
-                        .key(object.key())
+                        .key(key)
                         .build();
 
                 InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
