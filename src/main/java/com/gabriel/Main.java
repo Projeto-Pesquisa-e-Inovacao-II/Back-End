@@ -107,7 +107,7 @@ public class Main {
                         .build();
 
                 InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
-                dadosEvasaoService.carregarPlanilha(objectContent);
+                dadosEvasaoService.carregarPlanilha(objectContent, key);
                 dadosEvasaoService.processarDados();
 
                 dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), objectContent);

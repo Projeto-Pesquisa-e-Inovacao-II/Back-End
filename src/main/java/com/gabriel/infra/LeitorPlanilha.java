@@ -15,8 +15,8 @@ public abstract class LeitorPlanilha {
     protected Workbook workbook;
     private static final Logger logger = LoggerFactory.getLogger(LeitorPlanilha.class);
 
-    public void carregarPlanilha(InputStream file) {
-        logger.info("Iniciando carregamento da planilha: {}", file);
+    public void carregarPlanilha(InputStream file, String fileName) {
+        logger.info("Iniciando carregamento da planilha: {}", fileName);
         IOUtils.setByteArrayMaxOverride(400_000_000);
 
         try {
@@ -24,7 +24,7 @@ public abstract class LeitorPlanilha {
             logger.info("Planilha carregada com sucesso!");
     }
         catch (IOException e) {
-            logger.error("Erro ao carregar planilha '{}'", file, e);
+            logger.error("Erro ao carregar planilha '{}'", fileName, e);
         e.printStackTrace();
         }
     }
