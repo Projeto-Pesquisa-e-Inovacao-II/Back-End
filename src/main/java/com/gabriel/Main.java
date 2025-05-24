@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class Main {
@@ -89,8 +90,10 @@ public class Main {
 //                        }
 //                    }
 
+
             S3Client s3Client = new S3Provider().getS3Client();
             String bucketName = "s3-dataway-bucket";
+            File flag = new File("/app/flag.txt");
 
             ListObjectsRequest listObjects = ListObjectsRequest.builder()
                     .bucket(bucketName)
@@ -106,11 +109,17 @@ public class Main {
                         .key(key)
                         .build();
 
+                if(flag.exists()) {
+                    logger.info("Dados já inseridos anteriormente. Encerrando.");
+                    return;
+                }
+
                 InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
                 dadosEvasaoService.carregarPlanilha(objectContent, key);
                 dadosEvasaoService.processarDados();
 
                 dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), objectContent);
+                Files.write(Paths.get("/app/flag.txt"), "inserido".getBytes());
             }
 
 
