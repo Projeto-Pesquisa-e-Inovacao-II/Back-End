@@ -15,20 +15,16 @@ public abstract class LeitorPlanilha {
     protected Workbook workbook;
     private static final Logger logger = LoggerFactory.getLogger(LeitorPlanilha.class);
 
-    public void carregarPlanilha(String filePath) {
-        logger.info("Iniciando carregamento da planilha: {}", filePath);
+    public void carregarPlanilha(InputStream file) {
+        logger.info("Iniciando carregamento da planilha: {}", file);
         IOUtils.setByteArrayMaxOverride(400_000_000);
 
-
         try {
-            Path file = Path.of(filePath);
-            InputStream arquivo = Files.newInputStream(file);
-
-            workbook = new XSSFWorkbook(arquivo);
+            workbook = new XSSFWorkbook(file);
             logger.info("Planilha carregada com sucesso!");
     }
         catch (IOException e) {
-            logger.error("Erro ao carregar planilha '{}'", filePath, e);
+            logger.error("Erro ao carregar planilha '{}'", file, e);
         e.printStackTrace();
         }
     }

@@ -9,13 +9,16 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -69,7 +72,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
     }
 
-    public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
+    public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, InputStream arquivo) {
         logger.info("Iniciando inserção de {} registros no banco (arquivo: {})", dadosEvasao.size(), arquivo);
 
         String sql = """
@@ -96,7 +99,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
                     stmtInserir.setInt(7, d.getTipoCampo());
                     stmtInserir.setInt(8, d.getQuantidade());
                     stmtInserir.setDouble(9, d.getValor());
-                    stmtInserir.setInt(10, concessionaria);
+                    stmtInserir.setInt(10, 1);
 
                     stmtInserir.addBatch();
                 } catch (Exception e) {
@@ -149,6 +152,11 @@ public class DadosEvasaoService extends LeitorPlanilha {
         }
 
     }
+
+    public void getFilesFromS3() throws IOException {
+
+    }
+
 
 
     public List<DadosEvasao> getDadosEvasaos() {
