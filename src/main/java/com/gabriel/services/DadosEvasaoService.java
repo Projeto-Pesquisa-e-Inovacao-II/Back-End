@@ -72,7 +72,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
     }
 
     public boolean dadosJaInseridos() {
-    String url = "jdbc:mysql://dataway-mysql:3306/dataway";
+    String url = "jdbc:mysql://dataway-mysql:3306/dataway?useSSL=false&serverTimezone=UTC";
     String user = "root";
     String password = "urubu100";
 
@@ -90,7 +90,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
     }
 
     return false;
-}
+    }
 
 
     public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
