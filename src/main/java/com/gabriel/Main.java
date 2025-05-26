@@ -12,10 +12,10 @@ public class Main {
     public static void main(String[] args) throws IOException {
         DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
 
-        if (dadosEvasaoService.dadosJaInseridos()) {
-            System.out.println("Dados já inseridos. Encerrando execução.");
-            return;
-        }
+//        if (dadosEvasaoService.dadosJaInseridos()) {
+//            System.out.println("Dados já inseridos. Encerrando execução.");
+//            return;
+//        }
 
         Integer year = 2024;
 
