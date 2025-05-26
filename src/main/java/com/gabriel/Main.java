@@ -4,6 +4,7 @@ import com.gabriel.infra.S3Provider;
 import com.gabriel.services.DadosEvasaoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -52,23 +53,26 @@ public class Main {
                 String key = s3Object.key();
                 logger.info("Processando arquivo: {}", key);
 
-                try (InputStream objectContent = s3Client.getObject(
-                        GetObjectRequest.builder()
-                                .bucket(BUCKET_NAME)
-                                .key(key)
-                                .build(),
-                        ResponseTransformer.toInputStream())) {
+                try {
+                    // Correção aqui: usa ResponseBytes e obtém o InputStream a partir dele
+                    ResponseBytes<?> objectBytes = s3Client.getObject(
+                            GetObjectRequest.builder()
+                                    .bucket(BUCKET_NAME)
+                                    .key(key)
+                                    .build(),
+                            ResponseTransformer.toBytes());
 
-                    dadosEvasaoService.carregarPlanilha(objectContent, key);
-                    dadosEvasaoService.processarDados();
-                    dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), key);
+                    try (InputStream objectContent = objectBytes.asInputStream()) {
+                        dadosEvasaoService.carregarPlanilha(objectContent, key);
+                        dadosEvasaoService.processarDados();
+                        dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), key);
 
-                    logger.info("Arquivo {} processado com sucesso.", key);
+                        logger.info("Arquivo {} processado com sucesso.", key);
+                    }
 
                 } catch (Exception e) {
                     logger.error("Erro ao processar arquivo {}: {}", key, e.getMessage(), e);
                     e.printStackTrace();
-                    // continue; // opcional: se quiser continuar mesmo com erro em algum arquivo
                 }
             }
 
