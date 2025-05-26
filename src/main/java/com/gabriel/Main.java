@@ -11,23 +11,28 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
         Logger logger = LoggerFactory.getLogger(Main.class);
-//        if (dadosEvasaoService.dadosJaInseridos()) {
-//            System.out.println("Dados já inseridos. Encerrando execução.");
-//            return;
-//        }
+
+        if (dadosJaInseridos) {
+            System.out.println("Dados já foram inseridos, encerrando Java...");
+            return;
+        }
+
 //        Integer year = 2024;
-//
+
 //        String base = FilePath.FILE_PATH.getFilePath();
+
         //this is actually terrible, but it works
 //        for (int conc = 1; conc < 33; conc++) {
 
@@ -35,7 +40,7 @@ public class Main {
 //            for (int i = 1; i <= 10; i++) {
 
 //                Path doesFileExist;
-//            String filePath = "";
+//                String filePath = "";
 //                if(conc < 10) {
 //                    doesFileExist = Path.of(base + "L0" + conc + "_" + year + ".xlsx"); // L0" + conc + "_" + year + ".xlsx"
 //                } else {
@@ -54,6 +59,41 @@ public class Main {
 //                } else {
 //
 //                    System.out.println("não");
+//
+//
+//
+//                    for (int j = 1; j <= 12; j++) {
+//                        Path doesSubfilesExist;
+//
+//                        if(conc < 10) {
+//                            if (j < 10) {
+//                                doesSubfilesExist = Path.of(base + "L0" + conc +"_0" + j + "-" + year + ".xlsx"); //L0" + conc +"_0" + j + "-" + year + ".xlsx"
+//                            } else {
+//                                doesSubfilesExist = Path.of(base + "L0" + conc +"_" + j + "-" + year + ".xlsx");//L0" + conc +"_" + j + "-" + year + ".xlsx"
+//                            }
+//
+//
+//                        } else {
+//                            if (j < 10) {
+//                                doesSubfilesExist = Path.of(base + "L" + conc +"_0" + j + "-" + year + ".xlsx"); //L0" + conc +"_0" + j + "-" + year + ".xlsx"
+//                            } else {
+//                                doesSubfilesExist = Path.of(base + "L" + conc +"_" + j + "-" + year + ".xlsx");//L0" + conc +"_" + j + "-" + year + ".xlsx"
+//                            }
+//                            System.out.println(doesSubfilesExist);
+//                        }
+//
+//
+//                        if(Files.exists(doesSubfilesExist)) {
+//                            System.out.println("existe");
+//                            filePath = doesSubfilesExist.toString();
+//
+//                            dadosEvasaoService.carregarPlanilha(filePath);
+//
+//                            dadosEvasaoService.processarDados();
+//                            dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), conc, filePath);
+//                            dadosEvasaoService.sendFileToS3(filePath);
+//                        }
+//                    }
 
 
             S3Client s3Client = new S3Provider().getS3Client();
@@ -73,17 +113,26 @@ public class Main {
                         .key(key)
                         .build();
 
+                if(flag.exists()) {
+                    logger.info("Dados já inseridos anteriormente. Encerrando.");
+                    return;
+                }
+
                 InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
                 dadosEvasaoService.carregarPlanilha(objectContent, key);
                 dadosEvasaoService.processarDados();
 
                 dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), objectContent);
             }
+
+
+
 //                }
 
 //                year ++;
 
 //            }
+
 
     }
 }
