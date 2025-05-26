@@ -1,6 +1,7 @@
 package com.gabriel.services;
 
 import com.gabriel.entities.DadosEvasao;
+import com.gabriel.exceptions.DadoInvalidoException;
 import com.gabriel.infra.ConexaoBanco;
 import com.gabriel.infra.LeitorPlanilha;
 import com.gabriel.infra.S3Provider;
@@ -43,23 +44,42 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
             try {
                 Integer colLote = Integer.parseInt(formatter.formatCellValue(row.getCell(0)));
-                Integer colPraca =  Integer.parseInt(formatter.formatCellValue(row.getCell(1)));
-                Integer colSentido =  Integer.parseInt(formatter.formatCellValue(row.getCell(2)));
+                Integer colPraca = Integer.parseInt(formatter.formatCellValue(row.getCell(1)));
+                Integer colSentido = Integer.parseInt(formatter.formatCellValue(row.getCell(2)));
 
                 String dateStr = formatter.formatCellValue(row.getCell(3)).replace('-', '/');
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
                 Date colData = sdf.parse(dateStr);
 
-                Integer colHora =  Integer.parseInt(formatter.formatCellValue(row.getCell(4)));
-                Integer colCategoria =  Integer.parseInt(formatter.formatCellValue(row.getCell(6)));
-                Integer colTipoCampo =  Integer.parseInt(formatter.formatCellValue(row.getCell(8)));
-                Integer colQuantidade =  Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
+                Integer colHora = Integer.parseInt(formatter.formatCellValue(row.getCell(4)));
+                Integer colCategoria = Integer.parseInt(formatter.formatCellValue(row.getCell(6)));
+                Integer colTipoCampo = Integer.parseInt(formatter.formatCellValue(row.getCell(8)));
+                Integer colQuantidade = Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
                 Double colValor = Double.parseDouble(formatter.formatCellValue(row.getCell(10)).replace(',', '.'));
 
-                DadosEvasao dadosEvasao = new DadosEvasao(colLote, colPraca, colSentido, colData, colHora, colCategoria, colTipoCampo, colQuantidade, colValor);
+                if (colQuantidade < 0) {
+                    throw new DadoInvalidoException("Quantidade negativa: " + colQuantidade);
+                }
+
+                if (colTipoCampo != 1) {
+                    throw new DadoInvalidoException("Tipo de campo diferente de evasão: " + colTipoCampo);
+                }
+
+                String nomePraca = nomePraca(colPraca);
+
+                DadosEvasao dadosEvasao = new DadosEvasao(
+                        colLote, colPraca, colSentido, colData,
+                        colHora, colCategoria, colTipoCampo, colQuantidade, colValor, nomePraca
+                );
+
                 dadosEvasaos.add(dadosEvasao);
                 linhasProcessadas++;
-            }  catch (Exception rowException) {
+                logger.info("✔ Linha {} tratada com sucesso – {}", row.getRowNum(), nomePraca);
+
+
+
+
+            } catch (Exception rowException) {
                 logger.error("Erro ao processar linha {} – ignorando (motivo: {})", row.getRowNum(), rowException.getMessage());
             }
 
@@ -69,13 +89,22 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
     }
 
+    private String nomePraca(int codigo) {
+        return switch (codigo) {
+            case 15 -> "Praça Anchieta";
+            case 16 -> "Praça Imigrantes";
+            case 17 -> "Praça Ecovias";
+            default -> "Praça " + codigo;
+        };
+    }
+
     public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
         logger.info("Iniciando inserção de {} registros no banco (arquivo: {})", dadosEvasao.size(), arquivo);
 
         String sql = """
-        INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, categoria, tpCampo, quantidade, valor, Empresa_idEmpresa) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """;
+                    INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, categoria, tpCampo, quantidade, valor, Empresa_idEmpresa) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
 
         System.out.println("Inserindo novos dados de " + arquivo);
         try (Connection con = ConexaoBanco.getConnection();
@@ -138,4 +167,6 @@ public class DadosEvasaoService extends LeitorPlanilha {
     public List<DadosEvasao> getDadosEvasaos() {
         return dadosEvasaos;
     }
+
+
 }

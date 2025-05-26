@@ -12,11 +12,12 @@ public class DadosEvasao {
     private Integer tipoCampo; // isenção, valido, evasao
     private Integer quantidade;
     private Double valor;
+    private String nomePraca;
 
     public DadosEvasao() {
     }
 
-    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas, Integer categoria, Integer tipoCampo, Integer quantidade, Double valor) {
+    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas, Integer categoria, Integer tipoCampo, Integer quantidade, Double valor, String nomePraca) {
         this.lote = lote;
         this.praca = praca;
         this.sentido = sentido;
@@ -26,6 +27,15 @@ public class DadosEvasao {
         this.tipoCampo = tipoCampo;
         this.quantidade = quantidade;
         this.valor = valor;
+        this.nomePraca = nomePraca;
+    }
+
+    public String getNomePraca() {
+        return nomePraca;
+    }
+
+    public void setNomePraca(String nomePraca) {
+        this.nomePraca = nomePraca;
     }
 
     public Integer getLote() {
