@@ -72,7 +72,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
     }
 
     public boolean dadosJaInseridos() {
-    String url = "jdbc:mysql://dataway-mysql:3306/dataway?useSSL=false&serverTimezone=UTC";
+    String url = "jdbc:mysql://dataway-mysql:3306/dataway?allowPublicKeyRetrieval=true&useSSL=false";
     String user = "root";
     String password = "urubu100";
 
