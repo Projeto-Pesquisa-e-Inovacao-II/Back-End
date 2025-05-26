@@ -22,10 +22,10 @@ public abstract class LeitorPlanilha {
         try {
             workbook = new XSSFWorkbook(file);
             logger.info("Planilha carregada com sucesso!");
-    }
+        }
         catch (IOException e) {
             logger.error("Erro ao carregar planilha '{}'", fileName, e);
-        e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
