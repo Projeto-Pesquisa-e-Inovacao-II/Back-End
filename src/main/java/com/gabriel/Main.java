@@ -1,92 +1,89 @@
 package com.gabriel;
 
-import com.gabriel.infra.S3Provider;
+import com.gabriel.enums.FilePath;
 import com.gabriel.services.DadosEvasaoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.core.ResponseBytes;
-import software.amazon.awssdk.core.sync.ResponseTransformer;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
+import java.nio.file.Path;
 
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final String FLAG_PATH = "/app/flag/flag.txt";
-    private static final String BUCKET_NAME = "s3-dataway-bucket";
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
 
-        try {
-            // Verifica se flag existe para evitar reprocessamento
-            File flag = new File(FLAG_PATH);
-            if (flag.exists()) {
-                logger.info("Dados já inseridos anteriormente. Encerrando.");
-                return;
-            }
+        if (dadosEvasaoService.dadosJaInseridos()) {
+            System.out.println("Dados já inseridos. Encerrando execução.");
+            return;
+        }
 
-            S3Client s3Client = new S3Provider().getS3Client();
+        Integer year = 2024;
 
-            logger.info("Listando arquivos no bucket S3: {}", BUCKET_NAME);
-            ListObjectsRequest listObjectsRequest = ListObjectsRequest.builder()
-                    .bucket(BUCKET_NAME)
-                    .build();
+        String base = FilePath.FILE_PATH.getFilePath();
 
-            List<S3Object> objects = s3Client.listObjects(listObjectsRequest).contents();
-            logger.info("Quantidade de arquivos encontrados: {}", objects.size());
+        //this is actually terrible, but it works
+        for (int conc = 1; conc < 33; conc++) {
 
-            if (objects.isEmpty()) {
-                logger.warn("Nenhum arquivo encontrado no bucket. Encerrando execução.");
-                return;
-            }
+//            year = 2024;
+//            for (int i = 1; i <= 10; i++) {
 
-            for (S3Object s3Object : objects) {
-                String key = s3Object.key();
-                logger.info("Processando arquivo: {}", key);
+//                Path doesFileExist;
+                String filePath = "";
+//                if(conc < 10) {
+//                    doesFileExist = Path.of(base + "L0" + conc + "_" + year + ".xlsx"); // L0" + conc + "_" + year + ".xlsx"
+//                } else {
+//                    doesFileExist = Path.of(base + "L" + conc + "_" + year + ".xlsx"); // L" + conc + "_" + year + ".xlsx"
+//                }
+//
+//                if(Files.exists(doesFileExist)) {
+//                    filePath = doesFileExist.toString();
+//
+//                    dadosEvasaoService.carregarPlanilha(filePath);
+//
+//                    dadosEvasaoService.processarDados();
+//                    dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), conc, filePath);
+//                    dadosEvasaoService.sendFileToS3(filePath);
+//
+//                } else {
+//
+//                    System.out.println("não");
 
-                try {
-                    // Correção aqui: usa ResponseBytes e obtém o InputStream a partir dele
-                    ResponseBytes<?> objectBytes = s3Client.getObject(
-                            GetObjectRequest.builder()
-                                    .bucket(BUCKET_NAME)
-                                    .key(key)
-                                    .build(),
-                            ResponseTransformer.toBytes());
+                    for (int j = 1; j <= 12; j++) {
+                        Path doesSubfilesExist;
 
-                    try (InputStream objectContent = objectBytes.asInputStream()) {
-                        dadosEvasaoService.carregarPlanilha(objectContent, key);
-                        dadosEvasaoService.processarDados();
-                        dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), key);
+                        if(conc < 10) {
+                            if (j < 10) {
+                                doesSubfilesExist = Path.of(base + "L0" + conc +"_0" + j + "-" + year + ".xlsx"); //L0" + conc +"_0" + j + "-" + year + ".xlsx"
+                            } else {
+                                doesSubfilesExist = Path.of(base + "L0" + conc +"_" + j + "-" + year + ".xlsx");//L0" + conc +"_" + j + "-" + year + ".xlsx"
+                            }
 
-                        logger.info("Arquivo {} processado com sucesso.", key);
+
+                        } else {
+                            doesSubfilesExist = Path.of(base + "L" + conc +"_0" + j + "-" + year + ".xlsx");
+                        }
+
+
+                        if(Files.exists(doesSubfilesExist)) {
+                            filePath = doesSubfilesExist.toString();
+
+                            dadosEvasaoService.carregarPlanilha(filePath);
+
+                            dadosEvasaoService.processarDados();
+                            dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), conc, filePath);
+                            dadosEvasaoService.sendFileToS3(filePath);
+                        }
                     }
 
-                } catch (Exception e) {
-                    logger.error("Erro ao processar arquivo {}: {}", key, e.getMessage(), e);
-                    e.printStackTrace();
-                }
-            }
 
-            // Cria flag para não reprocessar novamente
-            Files.createDirectories(Paths.get("/app/flag"));
-            Files.write(Paths.get(FLAG_PATH), "inserido".getBytes());
-            logger.info("Flag criada para indicar processamento concluído.");
+//                }
 
-        } catch (IOException e) {
-            logger.error("Erro de IO no processamento principal: {}", e.getMessage(), e);
-            e.printStackTrace();
-        } catch (Exception e) {
-            logger.error("Erro inesperado: {}", e.getMessage(), e);
-            e.printStackTrace();
+//                year ++;
+
+//            }
+
+
         }
+
+
     }
 }

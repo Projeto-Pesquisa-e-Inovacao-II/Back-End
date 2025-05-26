@@ -9,19 +9,18 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,7 +71,29 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
     }
 
-    public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, InputStream arquivo) {
+    public boolean dadosJaInseridos() {
+    String url = "jdbc:mysql://dataway-mysql:3306/dataway";
+    String user = "root";
+    String password = "urubu100";
+
+    try (Connection conn = DriverManager.getConnection(url, user, password)) {
+        String sql = "SELECT COUNT(*) FROM DadosPracaPedagio";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                return count > 0;
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    return false;
+}
+
+
+    public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
         logger.info("Iniciando inserção de {} registros no banco (arquivo: {})", dadosEvasao.size(), arquivo);
 
         String sql = """
@@ -83,42 +104,26 @@ public class DadosEvasaoService extends LeitorPlanilha {
         System.out.println("Inserindo novos dados de " + arquivo);
         try (Connection con = ConexaoBanco.getConnection();
              PreparedStatement stmtInserir = con.prepareStatement(sql)) {
-
             Integer contador = 0;
-            final int limiteLote = 1000;
-            con.setAutoCommit(false);
 
             for (DadosEvasao d : dadosEvasao) {
-                try {
-                    stmtInserir.setInt(1, d.getLote());
-                    stmtInserir.setInt(2, d.getPraca());
-                    stmtInserir.setInt(3, d.getSentido());
-                    stmtInserir.setDate(4, new java.sql.Date(d.getDataEvasao().getTime()));
-                    stmtInserir.setInt(5, d.getHoras());
-                    stmtInserir.setInt(6, d.getCategoria());
-                    stmtInserir.setInt(7, d.getTipoCampo());
-                    stmtInserir.setInt(8, d.getQuantidade());
-                    stmtInserir.setDouble(9, d.getValor());
-                    stmtInserir.setInt(10, 1);
+                stmtInserir.setInt(1, d.getLote());
+                stmtInserir.setInt(2, d.getPraca());
+                stmtInserir.setInt(3, d.getSentido());
+                stmtInserir.setDate(4, new java.sql.Date(d.getDataEvasao().getTime()));
+                stmtInserir.setInt(5, d.getHoras());
+                stmtInserir.setInt(6, d.getCategoria());
+                stmtInserir.setInt(7, d.getTipoCampo());
+                stmtInserir.setInt(8, d.getQuantidade());
+                stmtInserir.setDouble(9, d.getValor());
+                stmtInserir.setInt(10, concessionaria);
 
-                    stmtInserir.addBatch();
-                } catch (Exception e) {
-                    logger.warn("erro na linha {}: {}. Dado não inserido", d, e.getMessage());
-                    continue;
-                }
+                stmtInserir.executeUpdate();
                 contador++;
 
-                if (contador % limiteLote == 0) {
-                    stmtInserir.executeBatch();
-                    con.commit();
-                    stmtInserir.clearBatch();
+                if (contador % 1000 == 0) {
                     logger.debug("{} registros inseridos até agora…", contador);
                 }
-            }
-
-            if (contador % limiteLote != 0) {
-                stmtInserir.executeBatch();
-                con.commit();
             }
 
             logger.info("Inserção concluída com sucesso! Total de registros inseridos: {}", contador);
@@ -132,7 +137,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
     public void sendFileToS3(String filePath) {
         S3Client s3Client = new S3Provider().getS3Client();
-        String bucketName = "s3-dataway-bucket";
+        String bucketName = "dados-dataway-dev";
         try {
             logger.info("Iniciando upload de arquivo para S3...");
             logger.debug("Nome do bucket: {}", bucketName);
@@ -152,11 +157,6 @@ public class DadosEvasaoService extends LeitorPlanilha {
         }
 
     }
-
-    public void getFilesFromS3() throws IOException {
-
-    }
-
 
 
     public List<DadosEvasao> getDadosEvasaos() {
