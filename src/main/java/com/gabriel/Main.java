@@ -66,7 +66,10 @@ public class Main {
                         if(Files.exists(doesSubfilesExist)) {
                             filePath = doesSubfilesExist.toString();
 
-                            dadosEvasaoService.carregarPlanilha(filePath);
+                            try (InputStream inputStream = Files.newInputStream(Path.of(filePath))) {
+                                dadosEvasaoService.carregarPlanilha(inputStream, filePath);
+                            }
+
 
                             dadosEvasaoService.processarDados();
                             dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), conc, filePath);
