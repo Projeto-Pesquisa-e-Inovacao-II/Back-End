@@ -24,10 +24,10 @@ public class Main {
         DadosEvasaoService dadosEvasaoService = new DadosEvasaoService();
         Logger logger = LoggerFactory.getLogger(Main.class);
 
-//        if (dadosJaInseridos) {
-//            System.out.println("Dados já foram inseridos, encerrando Java...");
-//            return;
-//        }
+        if (dadosEvasaoService.dadosJaInseridos()) {
+            System.out.println("Dados já foram inseridos, encerrando Java...");
+            return;
+        }
 
 //        Integer year = 2024;
 

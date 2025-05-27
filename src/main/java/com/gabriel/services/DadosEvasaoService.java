@@ -78,15 +78,13 @@ public class DadosEvasaoService extends LeitorPlanilha {
     String password = "urubu100";
 
     try (Connection conn = DriverManager.getConnection(url, user, password)) {
-        String sql = "SELECT COUNT(*) FROM DadosPracaPedagio";
+        String sql = "SELECT 1 FROM DadosPracaPedagio LIMIT 1;";
         try (PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                int count = rs.getInt(1);
-                return count > 0;
-            }
+            return rs.next();
         }
     } catch (SQLException e) {
+        System.err.println("Erro ao verificar dados no banco: " + e.getMessage());
         e.printStackTrace();
     }
 
