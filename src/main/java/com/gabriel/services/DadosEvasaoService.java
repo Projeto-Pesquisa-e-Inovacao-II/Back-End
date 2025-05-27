@@ -19,9 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +29,26 @@ public class DadosEvasaoService extends LeitorPlanilha {
     List<DadosEvasao> dadosEvasaos = new ArrayList<>();
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
+    public boolean dadosJaInseridos() {
+    String url = "jdbc:mysql://dataway-mysql:3306/dataway?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true";
+    String user = "root";
+    String password = "urubu100";
+
+    try (Connection conn = DriverManager.getConnection(url, user, password)) {
+        String sql = "SELECT 1 FROM DadosPracaPedagio LIMIT 1;";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            return rs.next();
+        }
+    } catch (SQLException e) {
+        System.err.println("Erro ao verificar dados no banco: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    return false;
+    }
+
+    
     @Override
     public void processarDados() {
         logger.info("Iniciando processamento de dados de evasão");
@@ -85,7 +103,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
              PreparedStatement stmtInserir = con.prepareStatement(sql)) {
 
             Integer contador = 0;
-            final int limiteLote = 1000;
+            final int limiteLote = 5000;
             con.setAutoCommit(false);
 
             for (DadosEvasao d : dadosEvasao) {
