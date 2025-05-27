@@ -113,10 +113,10 @@ public class Main {
                         .key(key)
                         .build();
 
-                if(flag.exists()) {
-                    logger.info("Dados já inseridos anteriormente. Encerrando.");
-                    return;
-                }
+//                if(flag.exists()) {
+//                    logger.info("Dados já inseridos anteriormente. Encerrando.");
+//                    return;
+//                }
 
                 InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
                 dadosEvasaoService.carregarPlanilha(objectContent, key);
