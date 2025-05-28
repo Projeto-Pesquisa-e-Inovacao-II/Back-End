@@ -113,18 +113,19 @@ public class Main {
                         .key(key)
                         .build();
 
-//                if(flag.exists()) {
-//                    logger.info("Dados já inseridos anteriormente. Encerrando.");
-//                    return;
-//                }
-
                 dadosEvasaoService.fecharPlanilha();
-                InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
-                dadosEvasaoService.carregarPlanilha(objectContent, key);
-                dadosEvasaoService.processarDados();
 
-                dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), objectContent);
+                try (InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream())) {
+                    dadosEvasaoService.carregarPlanilha(objectContent, key);
+                    dadosEvasaoService.processarDados();
+                    dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), objectContent);
+                } catch (IOException e) {
+                    logger.error("Erro ao processar arquivo " + key, e);
+                }
+
+                System.gc();
             }
+
 
 
 
