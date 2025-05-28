@@ -103,7 +103,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
              PreparedStatement stmtInserir = con.prepareStatement(sql)) {
 
             Integer contador = 0;
-            final int limiteLote = 2000;
+            final int limiteLote = 1000;
             con.setAutoCommit(false);
 
             for (DadosEvasao d : dadosEvasao) {

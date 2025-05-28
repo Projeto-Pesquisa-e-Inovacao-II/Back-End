@@ -29,6 +29,18 @@ public abstract class LeitorPlanilha {
         }
     }
 
+    public void fecharPlanilha() {
+        if (workbook != null) {
+            try {
+                workbook.close();
+            } catch (IOException e) {
+                logger.error("Erro ao fechar o workbook", e);
+            }
+            workbook = null;  // Remove referência para facilitar GC
+        }
+    }
+
+
     public abstract void processarDados();
 
 }

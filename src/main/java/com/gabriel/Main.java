@@ -118,6 +118,7 @@ public class Main {
 //                    return;
 //                }
 
+                dadosEvasaoService.fecharPlanilha();
                 InputStream objectContent = s3Client.getObject(getObjectRequest, ResponseTransformer.toInputStream());
                 dadosEvasaoService.carregarPlanilha(objectContent, key);
                 dadosEvasaoService.processarDados();
