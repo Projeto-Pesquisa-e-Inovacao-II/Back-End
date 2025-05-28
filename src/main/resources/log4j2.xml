@@ -5,7 +5,7 @@
             <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss} %-5level - %msg%n"/>
         </Console>
         <File name="File" fileName="logs/app.log">
-            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss} %-5level - %msg%n"/>
+            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss} %-5level - %msg | STATUS=%X{status} | CONCESSAO=%X{concessao} | PLANILHA=%X{planilha}%n"/>
         </File>
     </Appenders>
     <Loggers>

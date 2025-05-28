@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class DadosEvasao {
     private Integer lote;
-    private Integer praca;
+    private Integer praca;    // tava String praca???? era pra ser Integer praca pq vem em numero a praca? help - alterei aqui pq parecia fazer mais sentido
     private Integer sentido; // norte, sul, leste oeste
     private Date dataEvasao;
     private Integer horas;
@@ -13,11 +13,13 @@ public class DadosEvasao {
     private Integer quantidade;
     private Double valor;
     private String nomePraca;
+    private String descricaoCategoria;
+
 
     public DadosEvasao() {
     }
 
-    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas, Integer categoria, Integer tipoCampo, Integer quantidade, Double valor, String nomePraca) {
+    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas, Integer categoria, Integer tipoCampo, Integer quantidade, Double valor, String nomePraca, String descricaoCategoria) {
         this.lote = lote;
         this.praca = praca;
         this.sentido = sentido;
@@ -28,7 +30,18 @@ public class DadosEvasao {
         this.quantidade = quantidade;
         this.valor = valor;
         this.nomePraca = nomePraca;
+        this.descricaoCategoria = descricaoCategoria;
     }
+
+
+    public String getDescricaoCategoria() {
+        return descricaoCategoria;
+    }
+
+    public void setDescricaoCategoria(String descricaoCategoria) {
+        this.descricaoCategoria = descricaoCategoria;
+    }
+
 
     public String getNomePraca() {
         return nomePraca;

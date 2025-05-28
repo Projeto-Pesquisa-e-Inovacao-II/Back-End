@@ -2,6 +2,7 @@ package com.gabriel;
 
 import com.gabriel.enums.FilePath;
 import com.gabriel.services.DadosEvasaoService;
+import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -61,12 +62,22 @@ public class Main {
                         if(Files.exists(doesSubfilesExist)) {
                             filePath = doesSubfilesExist.toString();
 
-                            dadosEvasaoService.carregarPlanilha(filePath);
+                            String nomePlanilha = doesSubfilesExist.getFileName().toString();
+                            String nomeConcessao = dadosEvasaoService.obterNomeConcessaoPorId(conc);
 
+                            MDC.put("concessao", nomeConcessao);
+                            MDC.put("planilha", nomePlanilha);
+                            MDC.put("status", "INICIANDO_PROCESSAMENTO");
+
+                            dadosEvasaoService.carregarPlanilha(filePath);
+                            dadosEvasaoService.configurarContexto(conc, nomePlanilha);
                             dadosEvasaoService.processarDados();
                             dadosEvasaoService.inserirDadosEvasao(dadosEvasaoService.getDadosEvasaos(), conc, filePath);
                             dadosEvasaoService.sendFileToS3(filePath);
+
+                            MDC.clear(); // importante para não manter valores antigos
                         }
+
                     }
 
 

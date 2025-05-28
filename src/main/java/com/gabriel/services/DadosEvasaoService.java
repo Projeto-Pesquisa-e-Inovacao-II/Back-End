@@ -15,6 +15,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
 
 import java.io.File;
 import java.sql.Connection;
@@ -28,10 +30,58 @@ import java.util.List;
 public class DadosEvasaoService extends LeitorPlanilha {
     List<DadosEvasao> dadosEvasaos = new ArrayList<>();
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private Integer concessionariaId;
+    private String nomeArquivo;
+
+
+    public String obterNomeConcessaoPorId(Integer categoria) {
+        return switch (categoria) {
+            case 1 -> "ECOVIAS";
+            case 2 -> "ECOPISTAS";
+            case 3 -> "ECOSUL";
+            case 4 -> "ECO101";
+            case 5 -> "ECOVALE";
+            case 6 -> "ECOPORTO";
+            case 7 -> "ECORODOVIAS";
+            default -> "CONCESSAO_" + categoria;
+        };
+    }
+
+    public String descricaoCategoria(Integer categoria) {
+        return switch (categoria) {
+            // modificar segundo tabela
+            case 1 -> "Motocicleta";
+            case 2 -> "Passeio";
+            case 3 -> "Comercial";
+            default -> "Categoria desconhecida";
+        };
+    }
+
+    private String nomePraca(Integer praca) {
+        return switch (praca) {
+            case 15 -> "Praça Anchieta";
+            case 16 -> "Praça Imigrantes";
+            case 17 -> "Praça Ecovias";
+            default -> "Praça " + praca;
+        };
+
+
+    }
+
+    public void configurarContexto(Integer concessionariaId, String nomeArquivo) {
+        this.concessionariaId = concessionariaId;
+        this.nomeArquivo = nomeArquivo;
+    }
+
 
     @Override
     public void processarDados() {
+        MDC.put("status", "INICIANDO_PROCESSAMENTO");
+        MDC.put("concessao", obterNomeConcessaoPorId(this.concessionariaId));
+        MDC.put("planilha", this.nomeArquivo);
+
         logger.info("Iniciando processamento de dados de evasão");
+        salvarLogNoBanco("INFO", "Iniciando processamento de dados de evasão");
         Sheet sheet = workbook.getSheetAt(0);
         DataFormatter formatter = new DataFormatter();
         Integer linhasProcessadas = 0;
@@ -53,6 +103,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
                 Integer colHora = Integer.parseInt(formatter.formatCellValue(row.getCell(4)));
                 Integer colCategoria = Integer.parseInt(formatter.formatCellValue(row.getCell(6)));
+                String descCategoria = descricaoCategoria(colCategoria);
                 Integer colTipoCampo = Integer.parseInt(formatter.formatCellValue(row.getCell(8)));
                 Integer colQuantidade = Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
                 Double colValor = Double.parseDouble(formatter.formatCellValue(row.getCell(10)).replace(',', '.'));
@@ -69,36 +120,78 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
                 DadosEvasao dadosEvasao = new DadosEvasao(
                         colLote, colPraca, colSentido, colData,
-                        colHora, colCategoria, colTipoCampo, colQuantidade, colValor, nomePraca
+                        colHora, colCategoria, colTipoCampo, colQuantidade, colValor, nomePraca, descCategoria
                 );
 
                 dadosEvasaos.add(dadosEvasao);
                 linhasProcessadas++;
                 logger.info("✔ Linha {} tratada com sucesso – {}", row.getRowNum(), nomePraca);
-
-
+                salvarLogNoBanco("INFO", "Linha " + row.getRowNum() + " tratada com sucesso – " + nomePraca);
 
 
             } catch (Exception rowException) {
-                logger.error("Erro ao processar linha {} – ignorando (motivo: {})", row.getRowNum(), rowException.getMessage());
+                MDC.put("status", "FALHA_PROCESSAMENTO");
+                logger.error("Erro ao processar linha {}", row.getRowNum());
+                salvarLogNoBanco("ERROR", "Erro ao processar linha " + row.getRowNum());
             }
 
         }
-        logger.info("Processamento concluído: {} linhas válidas",
-                linhasProcessadas);
+
+        MDC.put("status", "INSERIDO_COM_SUCESSO");
+        logger.info("Inserção concluída com sucesso! Total de registros inseridos: {}", linhasProcessadas);
+        salvarLogNoBanco("INFO", "Inserção concluída com sucesso! Total de registros inseridos: " + linhasProcessadas);
+
+        // Enviar o log para o S3
+        sendFileToS3("logs/app.log");
 
     }
 
-    private String nomePraca(int codigo) {
-        return switch (codigo) {
-            case 15 -> "Praça Anchieta";
-            case 16 -> "Praça Imigrantes";
-            case 17 -> "Praça Ecovias";
-            default -> "Praça " + codigo;
+
+    public void salvarLogNoBanco(String nivel, String mensagem) {
+        int nivelId = switch (nivel.toUpperCase()) {
+            case "DEBUG" -> 1;
+            case "INFO" -> 2;
+            case "WARN" -> 3;
+            case "ERROR" -> 4;
+            default -> 0; // ou lança exceção
         };
+
+        int statusId = switch (MDC.get("status")) {
+            case "INICIANDO_PROCESSAMENTO" -> 1;
+            case "INSERINDO_DADOS" -> 2;
+            case "INSERIDO_COM_SUCESSO" -> 3;
+            case "FALHA_PROCESSAMENTO" -> 4;
+            case "FALHA_INSERCAO" -> 5;
+            default -> 0;
+        };
+
+        String sql = """
+                    INSERT INTO LogJava (descricao, dataEnvio, fkNivelLog, fkStatus)
+                    VALUES (?, ?, ?, ?)
+                """;
+
+        try (Connection con = ConexaoBanco.getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, mensagem);
+            stmt.setTimestamp(2, new java.sql.Timestamp(System.currentTimeMillis()));
+            stmt.setInt(3, nivelId);
+            stmt.setInt(4, statusId);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            logger.error("Erro ao salvar log no banco", e);
+        }
     }
+
 
     public void inserirDadosEvasao(List<DadosEvasao> dadosEvasao, Integer concessionaria, String arquivo) {
+
+
+        MDC.put("status", "INSERINDO_DADOS");
+        MDC.put("concessao", obterNomeConcessaoPorId(this.concessionariaId));
+        MDC.put("planilha", new File(arquivo).getName());
         logger.info("Iniciando inserção de {} registros no banco (arquivo: {})", dadosEvasao.size(), arquivo);
 
         String sql = """
@@ -117,11 +210,12 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 stmtInserir.setInt(3, d.getSentido());
                 stmtInserir.setDate(4, new java.sql.Date(d.getDataEvasao().getTime()));
                 stmtInserir.setInt(5, d.getHoras());
-                stmtInserir.setInt(6, d.getCategoria());
+                stmtInserir.setString(6, d.getDescricaoCategoria());
                 stmtInserir.setInt(7, d.getTipoCampo());
                 stmtInserir.setInt(8, d.getQuantidade());
                 stmtInserir.setDouble(9, d.getValor());
                 stmtInserir.setInt(10, concessionaria);
+
 
                 stmtInserir.executeUpdate();
                 contador++;
@@ -131,13 +225,17 @@ public class DadosEvasaoService extends LeitorPlanilha {
                 }
             }
 
+            MDC.put("status", "INSERIDO_COM_SUCESSO");
             logger.info("Inserção concluída com sucesso! Total de registros inseridos: {}", contador);
             dadosEvasaos.clear();
 
         } catch (SQLException e) {
+            MDC.put("status", "FALHA_INSERCAO");
             logger.error("Erro ao inserir dados de evasão no banco", e);
+            salvarLogNoBanco("ERROR", "Erro ao inserir dados de evasão no banco: " + e.getMessage());
             throw new RuntimeException(e);
         }
+
     }
 
     public void sendFileToS3(String filePath) {
@@ -160,6 +258,7 @@ public class DadosEvasaoService extends LeitorPlanilha {
         } catch (S3Exception e) {
             logger.error("Erro ao fazer upload do arquivo: " + e.getMessage());
         }
+
 
     }
 
