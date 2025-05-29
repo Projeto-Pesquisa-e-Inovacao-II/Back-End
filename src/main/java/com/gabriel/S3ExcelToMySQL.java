@@ -56,7 +56,7 @@ public class S3ExcelToMySQL {
         conn.setAutoCommit(false);
 
         String sql = """
-            INSERT INTO DadosPracaPedagio (praca, lote, data, hora, valor, sentiod, tpCampo, quantidade, Categoria, Empresa_idEmpresa) 
+            INSERT INTO DadosPracaPedagio (praca, lote, data, hora, valor, sentido, tpCampo, quantidade, Categoria, Empresa_idEmpresa) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
         PreparedStatement ps = conn.prepareStatement(sql);
@@ -115,7 +115,7 @@ public class S3ExcelToMySQL {
             @Override
             public void endRow(int rowNum) {
                 try {
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i <= 10; i++) {
                         String val = i < rowValues.size() ? rowValues.get(i) : null;
                         ps.setString(i + 1, val);
                     }
