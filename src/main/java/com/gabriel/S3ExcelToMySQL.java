@@ -24,6 +24,7 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.poi.ss.usermodel.DataFormatter;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -141,8 +142,8 @@ public class S3ExcelToMySQL {
             @Override
             public void headerFooter(String text, boolean isHeader, String tagName) {}
         };
-
-        XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(styles, strings, handler, false);
+        DataFormatter formatter = new DataFormatter();
+        XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(styles, null, strings, handler, formatter, false);
         sheetParser.setContentHandler(sheetHandler);
         sheetParser.parse(new InputSource(sheetInputStream));
     }
