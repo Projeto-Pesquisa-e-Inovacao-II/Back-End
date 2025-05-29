@@ -106,6 +106,9 @@ public class S3ExcelToMySQL {
     }
 
     private static void processSheet(StylesTable styles, ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
+        Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
+        logger.info("Entrou no método processSheet");
+
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
         SAXParser saxParser = saxFactory.newSAXParser();
         XMLReader sheetParser = saxParser.getXMLReader();
@@ -115,13 +118,12 @@ public class S3ExcelToMySQL {
 
             @Override
             public void startRow(int rowNum) {
-                System.out.println("Linha:" + rowNum);
+                logger.info("Início da linha: " + rowNum);
                 rowValues.clear();
             }
 
             @Override
             public void endRow(int rowNum) {
-                Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
                 try {
                     for (int i = 0; i < 10; i++) {
                         String val = i < rowValues.size() ? rowValues.get(i) : null;
@@ -136,15 +138,19 @@ public class S3ExcelToMySQL {
 
             @Override
             public void cell(String cellReference, String formattedValue, org.apache.poi.xssf.usermodel.XSSFComment comment) {
+                logger.info("Célula: " + cellReference + " = " + formattedValue);
                 rowValues.add(formattedValue);
             }
 
             @Override
             public void headerFooter(String text, boolean isHeader, String tagName) {}
         };
+
         DataFormatter formatter = new DataFormatter();
         XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(styles, null, strings, handler, formatter, false);
+
         sheetParser.setContentHandler(sheetHandler);
         sheetParser.parse(new InputSource(sheetInputStream));
     }
+
 }
