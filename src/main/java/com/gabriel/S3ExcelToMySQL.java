@@ -80,13 +80,14 @@ public class S3ExcelToMySQL {
 
                 ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(opcPackage);
                 XSSFReader xssfReader = new XSSFReader(opcPackage);
+                StylesTable styles = xssfReader.getStylesTable();
                 XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
 
                 int sheetIndex = 1;
                 while (iter.hasNext()) {
                     try (InputStream sheetStream = iter.next()) {
                         logger.info("Processando planilha #" + sheetIndex + " do arquivo " + object.key());
-                        processSheet(strings, sheetStream, ps);
+                        processSheet(styles, strings, sheetStream, ps);
                         ps.executeBatch();
                         conn.commit();
                         logger.info("Inserção finalizada com sucesso.");
@@ -103,7 +104,7 @@ public class S3ExcelToMySQL {
         logger.info("Todos os dados foram transferidos com sucesso.");
     }
 
-    private static void processSheet(ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
+    private static void processSheet(StylesTable styles, ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
         SAXParser saxParser = saxFactory.newSAXParser();
         XMLReader sheetParser = saxParser.getXMLReader();
@@ -119,17 +120,15 @@ public class S3ExcelToMySQL {
             @Override
             public void endRow(int rowNum) {
                 Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
-
                 try {
-                    for (int i = 0; i <= 10; i++) {
+                    for (int i = 0; i < 10; i++) {
                         String val = i < rowValues.size() ? rowValues.get(i) : null;
                         ps.setString(i + 1, val);
                     }
                     logger.info("Linha processada: " + rowValues);
                     ps.addBatch();
                 } catch (Exception e) {
-                    logger.error("Erro ao adicionar batch");
-                    e.printStackTrace();
+                    logger.error("Erro ao adicionar linha ao batch", e);
                 }
             }
 
@@ -142,10 +141,7 @@ public class S3ExcelToMySQL {
             public void headerFooter(String text, boolean isHeader, String tagName) {}
         };
 
-
-        XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(
-                null, strings, handler, false);
-
+        XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(styles, strings, handler, false);
         sheetParser.setContentHandler(sheetHandler);
         sheetParser.parse(new InputSource(sheetInputStream));
     }
