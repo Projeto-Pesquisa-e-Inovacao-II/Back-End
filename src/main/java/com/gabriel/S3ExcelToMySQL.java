@@ -83,6 +83,11 @@ public class S3ExcelToMySQL {
                     try (InputStream sheetStream = iter.next()) {
                         logger.info("Processando planilha #" + sheetIndex + " do arquivo " + object.key());
                         processSheet(strings, sheetStream, ps);
+                        ps.executeBatch();
+                        conn.commit();
+                        ps.close();
+                        conn.close();
+                        logger.info("Inserção finalizada com sucesso.");
                         sheetIndex++;
                     }
                 }
@@ -92,11 +97,6 @@ public class S3ExcelToMySQL {
             }
         }
 
-        ps.executeBatch();
-        conn.commit();
-        ps.close();
-        conn.close();
-        logger.info("Inserção finalizada com sucesso.");
     }
 
     private static void processSheet(ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
@@ -114,13 +114,18 @@ public class S3ExcelToMySQL {
 
             @Override
             public void endRow(int rowNum) {
+                if (rowNum == 0) return;
+                Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
+
                 try {
                     for (int i = 0; i <= 10; i++) {
                         String val = i < rowValues.size() ? rowValues.get(i) : null;
                         ps.setString(i + 1, val);
                     }
+                    logger.info("Linha processada: " + rowValues);
                     ps.addBatch();
                 } catch (Exception e) {
+                    logger.error("Erro ao adicionar batch");
                     e.printStackTrace();
                 }
             }
