@@ -1,6 +1,7 @@
 package com.gabriel;
 
 import org.apache.poi.util.IOUtils;
+import org.apache.poi.xssf.model.StylesTable;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -117,7 +118,6 @@ public class S3ExcelToMySQL {
 
             @Override
             public void endRow(int rowNum) {
-                if (rowNum == 0) return;
                 Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
 
                 try {
@@ -141,6 +141,7 @@ public class S3ExcelToMySQL {
             @Override
             public void headerFooter(String text, boolean isHeader, String tagName) {}
         };
+
 
         XSSFSheetXMLHandler sheetHandler = new XSSFSheetXMLHandler(
                 null, strings, handler, false);
