@@ -114,7 +114,7 @@ public class S3ExcelToMySQL {
 
             @Override
             public void startRow(int rowNum) {
-                rowValues.clear();
+                
             }
 
             @Override
