@@ -1,6 +1,7 @@
 package com.gabriel;
 
 import org.apache.poi.util.IOUtils;
+import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.model.StylesTable;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -55,63 +56,66 @@ public class S3ExcelToMySQL {
 
         List<S3Object> objects = s3.listObjectsV2(listRequest).contents();
 
-        Connection conn = DriverManager.getConnection(jdbcURL, user, password);
-        conn.setAutoCommit(false);
+        try (Connection conn = DriverManager.getConnection(jdbcURL, user, password)) {
+            conn.setAutoCommit(false);
 
-        String sql = """
+            String sql = """
             INSERT INTO DadosPracaPedagio (praca, lote, data, hora, valor, sentido, tpCampo, quantidade, Categoria, Empresa_idEmpresa) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
-        PreparedStatement ps = conn.prepareStatement(sql);
 
-        for (S3Object object : objects) {
-            if (!object.key().endsWith(".xlsx")) continue;
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            logger.info("Iniciando processamento do arquivo: " + object.key());
+                for (S3Object object : objects) {
+                    if (!object.key().endsWith(".xlsx")) continue;
 
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(object.key())
-                    .build();
+                    logger.info("Iniciando processamento do arquivo: " + object.key());
 
-            IOUtils.setByteArrayMaxOverride(400_000_000);
+                    GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(object.key())
+                            .build();
 
-            try (InputStream s3InputStream = s3.getObject(getObjectRequest);
-                 OPCPackage opcPackage = OPCPackage.open(s3InputStream)) {
+                    IOUtils.setByteArrayMaxOverride(400_000_000);
 
-                ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(opcPackage);
-                XSSFReader xssfReader = new XSSFReader(opcPackage);
-                StylesTable styles = xssfReader.getStylesTable();
-                XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
+                    try (InputStream s3InputStream = s3.getObject(getObjectRequest);
+                         OPCPackage opcPackage = OPCPackage.open(s3InputStream)) {
 
-                int sheetIndex = 1;
-                while (iter.hasNext()) {
-                    try (InputStream sheetStream = iter.next()) {
-                        logger.info("Processando planilha #" + sheetIndex + " do arquivo " + object.key());
-                        processSheet(styles, strings, sheetStream, ps);
-                        ps.executeBatch();
+                        ReadOnlySharedStringsTable strings = new ReadOnlySharedStringsTable(opcPackage);
+                        XSSFReader xssfReader = new XSSFReader(opcPackage);
+                        StylesTable styles = xssfReader.getStylesTable();
+                        XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
+
+                        int sheetIndex = 1;
+                        while (iter.hasNext()) {
+                            try (InputStream sheetStream = iter.next()) {
+                                logger.info("Processando planilha #" + sheetIndex + " do arquivo " + object.key());
+                                processSheet(styles, strings, sheetStream, ps);
+                                sheetIndex++;
+                            }
+                        }
+
+                        ps.executeBatch(); // Executa após processar todas as sheets
                         conn.commit();
-                        logger.info("Inserção finalizada com sucesso.");
-                        sheetIndex++;
+                        logger.info("Inserção do arquivo concluída com sucesso: " + object.key());
+
+                    } catch (Exception e) {
+                        logger.error("Erro ao processar o arquivo: " + object.key(), e);
+                        conn.rollback(); // Desfaz lote atual se necessário
                     }
                 }
-
-            } catch (Exception e) {
-                logger.error("Erro ao processar arquivo: " + object.key(), e);
             }
         }
-        ps.close();
-        conn.close();
-        logger.info("Todos os dados foram transferidos com sucesso.");
+
+        logger.info("Todos os dados foram processados com sucesso.");
     }
+
 
     private static void processSheet(StylesTable styles, ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
         Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
         logger.info("Entrou no método processSheet");
 
-        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-        SAXParser saxParser = saxFactory.newSAXParser();
-        XMLReader sheetParser = saxParser.getXMLReader();
+        XMLReader sheetParser = XMLHelper.newXMLReader(); // CORREÇÃO AQUI
 
         SheetContentsHandler handler = new SheetContentsHandler() {
             List<String> rowValues = new ArrayList<>();
@@ -129,7 +133,7 @@ public class S3ExcelToMySQL {
                         String val = i < rowValues.size() ? rowValues.get(i) : null;
                         ps.setString(i + 1, val);
                     }
-                    logger.info("Linha processada: " + rowValues);
+                    logger.info("Inserindo dados: {}", rowValues);
                     ps.addBatch();
                 } catch (Exception e) {
                     logger.error("Erro ao adicionar linha ao batch", e);
@@ -143,7 +147,9 @@ public class S3ExcelToMySQL {
             }
 
             @Override
-            public void headerFooter(String text, boolean isHeader, String tagName) {}
+            public void headerFooter(String text, boolean isHeader, String tagName) {
+                // Intencionalmente deixado vazio
+            }
         };
 
         DataFormatter formatter = new DataFormatter();
@@ -152,5 +158,6 @@ public class S3ExcelToMySQL {
         sheetParser.setContentHandler(sheetHandler);
         sheetParser.parse(new InputSource(sheetInputStream));
     }
+
 
 }
