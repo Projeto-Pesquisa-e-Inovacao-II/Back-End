@@ -1,5 +1,6 @@
 package com.gabriel;
 
+import org.apache.poi.util.IOUtils;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -70,6 +71,8 @@ public class S3ExcelToMySQL {
                     .bucket(bucketName)
                     .key(object.key())
                     .build();
+
+            IOUtils.setByteArrayMaxOverride(400_000_000);
 
             try (InputStream s3InputStream = s3.getObject(getObjectRequest);
                  OPCPackage opcPackage = OPCPackage.open(s3InputStream)) {
