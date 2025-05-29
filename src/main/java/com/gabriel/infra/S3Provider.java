@@ -1,3 +1,4 @@
+/*
 package com.gabriel.infra;
 
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -12,3 +13,4 @@ public class S3Provider {
                 .build();
     }
 }
+*/
