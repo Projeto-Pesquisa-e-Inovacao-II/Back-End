@@ -85,8 +85,6 @@ public class S3ExcelToMySQL {
                         processSheet(strings, sheetStream, ps);
                         ps.executeBatch();
                         conn.commit();
-                        ps.close();
-                        conn.close();
                         logger.info("Inserção finalizada com sucesso.");
                         sheetIndex++;
                     }
@@ -96,7 +94,9 @@ public class S3ExcelToMySQL {
                 logger.error("Erro ao processar arquivo: " + object.key(), e);
             }
         }
-
+        ps.close();
+        conn.close();
+        logger.info("Todos os dados foram transferidos com sucesso.");
     }
 
     private static void processSheet(ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
