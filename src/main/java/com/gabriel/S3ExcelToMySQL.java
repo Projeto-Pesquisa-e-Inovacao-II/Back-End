@@ -64,6 +64,8 @@ public class S3ExcelToMySQL {
         for (S3Object object : objects) {
             if (!object.key().endsWith(".xlsx")) continue;
 
+            logger.info("Iniciando processamento do arquivo: " + object.key());
+
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(object.key())
@@ -76,9 +78,12 @@ public class S3ExcelToMySQL {
                 XSSFReader xssfReader = new XSSFReader(opcPackage);
                 XSSFReader.SheetIterator iter = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
 
+                int sheetIndex = 1;
                 while (iter.hasNext()) {
                     try (InputStream sheetStream = iter.next()) {
+                        logger.info("Processando planilha #" + sheetIndex + " do arquivo " + object.key());
                         processSheet(strings, sheetStream, ps);
+                        sheetIndex++;
                     }
                 }
 
@@ -91,6 +96,7 @@ public class S3ExcelToMySQL {
         conn.commit();
         ps.close();
         conn.close();
+        logger.info("Inserção finalizada com sucesso.");
     }
 
     private static void processSheet(ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
