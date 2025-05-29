@@ -56,7 +56,7 @@ public class S3ExcelToMySQL {
         conn.setAutoCommit(false);
 
         String sql = """
-            INSERT INTO DadosPracaPedagio (lote, praca, sentido, data, hora, categoria, tpCampo, quantidade, valor, Empresa_idEmpresa) 
+            INSERT INTO DadosPracaPedagio (praca, lote, data, hora, valor, sentiod, tpCampo, quantidade, Categoria, Empresa_idEmpresa) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
         PreparedStatement ps = conn.prepareStatement(sql);
