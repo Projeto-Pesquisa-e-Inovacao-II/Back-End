@@ -1,4 +1,4 @@
-/*
+
 package com.gabriel;
 
 import com.gabriel.enums.FilePath;
@@ -138,4 +138,4 @@ public class Main {
 
 
     }
-}*/
+}

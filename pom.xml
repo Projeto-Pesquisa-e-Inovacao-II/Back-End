@@ -85,7 +85,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.gabriel.S3ExcelToMySQL</mainClass>
+                            <mainClass>com.gabriel.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
