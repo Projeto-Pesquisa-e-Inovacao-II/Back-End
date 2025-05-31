@@ -122,18 +122,18 @@ public class S3ExcelToMySQL {
 
             @Override
             public void startRow(int rowNum) {
-                logger.info("Início da linha: " + rowNum);
+                logger.info("Entrou no startrow.");
                 rowValues.clear();
             }
 
             @Override
             public void endRow(int rowNum) {
+                logger.info("Entrou no endrow.");
                 try {
                     for (int i = 0; i < 10; i++) {
                         String val = i < rowValues.size() ? rowValues.get(i) : null;
                         ps.setString(i + 1, val);
                     }
-                    logger.info("Inserindo dados: {}", rowValues);
                     ps.addBatch();
                 } catch (Exception e) {
                     logger.error("Erro ao adicionar linha ao batch", e);
