@@ -116,79 +116,74 @@ public class S3ExcelToMySQL {
             public void startRow(int rowNum) {
                 rowValues.clear();
             }
-            
+
             @Override
             public void endRow(int rowNum) {
-                if (rowNum == 0) return;
+                if (rowNum == 0) return; // Ignora cabeçalho
 
                 try {
-                    ps.setString(1, getOrNull(rowValues, 0)); // praca
-                    ps.setString(2, getOrNull(rowValues, 1)); // lote
+                    ps.setString(1, getOrNull(rowValues, 1)); // praca (coluna PRACA)
+                    ps.setString(2, getOrNull(rowValues, 0)); // lote (coluna LOTE)
 
-                    // Data
+                    // data
                     try {
-                        String dataStr = getOrNull(rowValues, 2);
+                        String dataStr = getOrNull(rowValues, 3); // DATA
                         ps.setDate(3, (dataStr != null && !dataStr.isEmpty()) ? Date.valueOf(dataStr) : null);
                     } catch (Exception e) {
-                        logger.error("Data inválida: " + getOrNull(rowValues, 2));
+                        logger.error("Data inválida: " + getOrNull(rowValues, 3));
                         ps.setNull(3, Types.DATE);
                     }
 
-                    // Hora
+                    // hora
                     try {
-                        String horaStr = getOrNull(rowValues, 3);
-                        ps.setTime(4, (horaStr != null && !horaStr.isEmpty()) ? Time.valueOf(horaStr) : null);
+                        String horaStr = getOrNull(rowValues, 4); // HORA
+                        ps.setInt(4, (horaStr != null && !horaStr.isEmpty()) ? Integer.parseInt(horaStr) : 0);
                     } catch (Exception e) {
-                        logger.error("Hora inválida: " + getOrNull(rowValues, 3));
-                        ps.setNull(4, Types.TIME);
+                        logger.error("Hora inválida: " + getOrNull(rowValues, 4));
+                        ps.setInt(4, 0);
                     }
 
-                    // Valor
+                    // valor
                     try {
-                        String valorStr = getOrNull(rowValues, 4);
+                        String valorStr = getOrNull(rowValues, 10); // VALOR
                         ps.setDouble(5, (valorStr != null && !valorStr.isEmpty()) ? Double.parseDouble(valorStr) : 0.0);
                     } catch (Exception e) {
-                        logger.error("Valor inválido: " + getOrNull(rowValues, 4));
+                        logger.error("Valor inválido: " + getOrNull(rowValues, 10));
                         ps.setDouble(5, 0.0);
                     }
 
-                    ps.setString(6, getOrNull(rowValues, 5)); // sentido
+                    ps.setString(6, getOrNull(rowValues, 2)); // sentido
 
                     // tpCampo
                     try {
-                        String tpCampoStr = getOrNull(rowValues, 6);
+                        String tpCampoStr = getOrNull(rowValues, 8); // TP_CAMPO
                         ps.setInt(7, (tpCampoStr != null && !tpCampoStr.isEmpty()) ? Integer.parseInt(tpCampoStr) : 0);
                     } catch (Exception e) {
-                        logger.error("tpCampo inválido: " + getOrNull(rowValues, 6));
+                        logger.error("tpCampo inválido: " + getOrNull(rowValues, 8));
                         ps.setInt(7, 0);
                     }
 
                     // quantidade
                     try {
-                        String qtdStr = getOrNull(rowValues, 7);
+                        String qtdStr = getOrNull(rowValues, 9); // QUANTIDADE
                         ps.setInt(8, (qtdStr != null && !qtdStr.isEmpty()) ? Integer.parseInt(qtdStr) : 0);
                     } catch (Exception e) {
-                        logger.error("quantidade inválida: " + getOrNull(rowValues, 7));
+                        logger.error("quantidade inválida: " + getOrNull(rowValues, 9));
                         ps.setInt(8, 0);
                     }
 
-                    ps.setString(9, getOrNull(rowValues, 8)); // Categoria
+                    ps.setString(9, getOrNull(rowValues, 6)); // Categoria
 
                     // Empresa_idEmpresa
-                    try {
-                        String empresaStr = getOrNull(rowValues, 9);
-                        ps.setInt(10, (empresaStr != null && !empresaStr.isEmpty()) ? Integer.parseInt(empresaStr) : 0);
-                    } catch (Exception e) {
-                        logger.error("Empresa_idEmpresa inválido: " + getOrNull(rowValues, 9));
-                        ps.setInt(10, 0);
-                    }
+                    ps.setNull(10, Types.INTEGER); // ou: ps.setInt(10, 1); se quiser um valor fixo
 
                     ps.addBatch();
 
                 } catch (Exception e) {
-                    logger.error("Erro ao adicionar linha ao batch. Conteúdo da linha: " + rowValues, e);
+                    logger.error("Erro ao processar linha " + rowNum, e);
                 }
             }
+
 
 
             @Override
