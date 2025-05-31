@@ -26,14 +26,17 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.poi.ss.usermodel.DataFormatter;
 import java.io.InputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.Date;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
 public class S3ExcelToMySQL {
 
     public static void main(String[] args) throws Exception {
-
         Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
 
         String bucketName = "s3-dataway-bucket";
@@ -57,9 +60,9 @@ public class S3ExcelToMySQL {
             conn.setAutoCommit(false);
 
             String sql = """
-                INSERT INTO DadosPracaPedagio 
-                (praca, lote, data, hora, valor, sentido, tpCampo, quantidade, Categoria, Empresa_idEmpresa) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO DadosPracaPedagio (
+                    praca, lote, data, hora, valor, sentido, tpCampo, quantidade, Categoria, Empresa_idEmpresa
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -88,7 +91,7 @@ public class S3ExcelToMySQL {
                         while (iter.hasNext()) {
                             try (InputStream sheetStream = iter.next()) {
                                 logger.info("Processando planilha #" + sheetIndex + " do arquivo " + object.key());
-                                processSheet(styles, strings, sheetStream, ps);
+                                processSheet(styles, strings, sheetStream, ps, logger);
                                 sheetIndex++;
                             }
                         }
@@ -108,10 +111,7 @@ public class S3ExcelToMySQL {
         logger.info("Todos os dados foram processados com sucesso.");
     }
 
-    private static void processSheet(StylesTable styles, ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps) throws Exception {
-        Logger logger = LoggerFactory.getLogger(S3ExcelToMySQL.class);
-        logger.info("Entrou no método processSheet");
-
+    private static void processSheet(StylesTable styles, ReadOnlySharedStringsTable strings, InputStream sheetInputStream, PreparedStatement ps, Logger logger) throws Exception {
         XMLReader sheetParser = XMLHelper.newXMLReader();
 
         SheetContentsHandler handler = new SheetContentsHandler() {
@@ -124,82 +124,50 @@ public class S3ExcelToMySQL {
 
             @Override
             public void endRow(int rowNum) {
+                if (rowNum == 0) return; // pula o cabeçalho
+
                 try {
-                    // Mapeamento com tratamento de tipo
-                    ps.setString(1, getValue(rowValues, 0)); // praca
-                    ps.setString(2, getValue(rowValues, 1)); // lote
+                    ps.setString(1, getOrNull(rowValues, 0)); // praca
+                    ps.setString(2, getOrNull(rowValues, 1)); // lote
 
-                    // data
-                    String dateStr = getValue(rowValues, 2);
-                    if (dateStr != null && !dateStr.isEmpty()) {
-                        ps.setDate(3, Date.valueOf(dateStr)); // yyyy-MM-dd
-                    } else {
-                        ps.setNull(3, Types.DATE);
-                    }
+                    // Data (assumindo formato yyyy-MM-dd)
+                    String dataStr = getOrNull(rowValues, 2);
+                    ps.setDate(3, dataStr != null ? Date.valueOf(dataStr) : null);
 
-                    // hora
-                    String timeStr = getValue(rowValues, 3);
-                    if (timeStr != null && !timeStr.isEmpty()) {
-                        ps.setTime(4, Time.valueOf(timeStr)); // HH:mm:ss
-                    } else {
-                        ps.setNull(4, Types.TIME);
-                    }
+                    // Hora (hh:mm:ss)
+                    String horaStr = getOrNull(rowValues, 3);
+                    ps.setTime(4, horaStr != null ? Time.valueOf(horaStr) : null);
 
-                    // valor
-                    String valorStr = getValue(rowValues, 4);
-                    if (valorStr != null && !valorStr.isEmpty()) {
-                        ps.setBigDecimal(5, new java.math.BigDecimal(valorStr.replace(",", ".")));
-                    } else {
-                        ps.setNull(5, Types.DECIMAL);
-                    }
+                    // Valor (double)
+                    String valorStr = getOrNull(rowValues, 4);
+                    ps.setDouble(5, valorStr != null && !valorStr.isEmpty() ? Double.parseDouble(valorStr) : 0);
 
-                    ps.setString(6, getValue(rowValues, 5)); // sentido
+                    ps.setString(6, getOrNull(rowValues, 5)); // sentido
+                    ps.setString(7, getOrNull(rowValues, 6)); // tpCampo
 
-                    // tpCampo
-                    String tpCampoStr = getValue(rowValues, 6);
-                    if (tpCampoStr != null && !tpCampoStr.isEmpty()) {
-                        ps.setInt(7, Integer.parseInt(tpCampoStr));
-                    } else {
-                        ps.setNull(7, Types.INTEGER);
-                    }
+                    // Quantidade (int)
+                    String qtdStr = getOrNull(rowValues, 7);
+                    ps.setInt(8, qtdStr != null && !qtdStr.isEmpty() ? Integer.parseInt(qtdStr) : 0);
 
-                    // quantidade
-                    String qtdStr = getValue(rowValues, 7);
-                    if (qtdStr != null && !qtdStr.isEmpty()) {
-                        ps.setInt(8, Integer.parseInt(qtdStr));
-                    } else {
-                        ps.setNull(8, Types.INTEGER);
-                    }
+                    ps.setString(9, getOrNull(rowValues, 8)); // Categoria
 
-                    ps.setString(9, getValue(rowValues, 8)); // Categoria
-
-                    // Empresa_idEmpresa
-                    String empStr = getValue(rowValues, 9);
-                    if (empStr != null && !empStr.isEmpty()) {
-                        ps.setInt(10, Integer.parseInt(empStr));
-                    } else {
-                        ps.setNull(10, Types.INTEGER);
-                    }
+                    // Empresa_idEmpresa (int)
+                    String empresaStr = getOrNull(rowValues, 9);
+                    ps.setInt(10, empresaStr != null && !empresaStr.isEmpty() ? Integer.parseInt(empresaStr) : 0);
 
                     ps.addBatch();
                 } catch (Exception e) {
-                    logger.error("Erro ao adicionar linha ao batch", e);
+                    logger.error("Erro ao adicionar linha ao batch. Conteúdo da linha: " + rowValues, e);
                 }
             }
 
             @Override
             public void cell(String cellReference, String formattedValue, org.apache.poi.xssf.usermodel.XSSFComment comment) {
-                rowValues.add(formattedValue);
+                rowValues.add(formattedValue != null ? formattedValue.trim() : null);
             }
 
             @Override
-            public void headerFooter(String text, boolean isHeader, String tagName) {
-                // Intencionalmente vazio
-            }
-
-            private String getValue(List<String> list, int index) {
-                return index < list.size() ? list.get(index) : null;
-            }
+            public void headerFooter(String text, boolean isHeader, String tagName) {}
         };
 
         DataFormatter formatter = new DataFormatter();
@@ -207,5 +175,9 @@ public class S3ExcelToMySQL {
 
         sheetParser.setContentHandler(sheetHandler);
         sheetParser.parse(new InputSource(sheetInputStream));
+    }
+
+    private static String getOrNull(List<String> values, int index) {
+        return index < values.size() ? values.get(index) : null;
     }
 }
