@@ -3,36 +3,31 @@ package com.gabriel;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.model.StylesTable;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler.SheetContentsHandler;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ss.usermodel.DataFormatter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.S3Object;
-
 import javax.xml.parsers.SAXParserFactory;
-
-import org.apache.poi.ss.usermodel.DataFormatter;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.Date;
-import java.sql.Time;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class S3ExcelToMySQL {
 
@@ -130,30 +125,33 @@ public class S3ExcelToMySQL {
                     ps.setString(1, getOrNull(rowValues, 0)); // praca
                     ps.setString(2, getOrNull(rowValues, 1)); // lote
 
-                    // Data (assumindo formato yyyy-MM-dd)
+                    // Data (yyyy-MM-dd)
                     String dataStr = getOrNull(rowValues, 2);
-                    ps.setDate(3, dataStr != null ? Date.valueOf(dataStr) : null);
+                    ps.setDate(3, (dataStr != null && !dataStr.isEmpty()) ? Date.valueOf(dataStr) : null);
 
                     // Hora (hh:mm:ss)
                     String horaStr = getOrNull(rowValues, 3);
-                    ps.setTime(4, horaStr != null ? Time.valueOf(horaStr) : null);
+                    ps.setTime(4, (horaStr != null && !horaStr.isEmpty()) ? Time.valueOf(horaStr) : null);
 
-                    // Valor (double)
+                    // Valor (decimal)
                     String valorStr = getOrNull(rowValues, 4);
-                    ps.setDouble(5, valorStr != null && !valorStr.isEmpty() ? Double.parseDouble(valorStr) : 0);
+                    ps.setDouble(5, (valorStr != null && !valorStr.isEmpty()) ? Double.parseDouble(valorStr) : 0);
 
                     ps.setString(6, getOrNull(rowValues, 5)); // sentido
-                    ps.setString(7, getOrNull(rowValues, 6)); // tpCampo
 
-                    // Quantidade (int)
+                    // tpCampo (int)
+                    String tpCampoStr = getOrNull(rowValues, 6);
+                    ps.setInt(7, (tpCampoStr != null && !tpCampoStr.isEmpty()) ? Integer.parseInt(tpCampoStr) : 0);
+
+                    // quantidade (int)
                     String qtdStr = getOrNull(rowValues, 7);
-                    ps.setInt(8, qtdStr != null && !qtdStr.isEmpty() ? Integer.parseInt(qtdStr) : 0);
+                    ps.setInt(8, (qtdStr != null && !qtdStr.isEmpty()) ? Integer.parseInt(qtdStr) : 0);
 
                     ps.setString(9, getOrNull(rowValues, 8)); // Categoria
 
                     // Empresa_idEmpresa (int)
                     String empresaStr = getOrNull(rowValues, 9);
-                    ps.setInt(10, empresaStr != null && !empresaStr.isEmpty() ? Integer.parseInt(empresaStr) : 0);
+                    ps.setInt(10, (empresaStr != null && !empresaStr.isEmpty()) ? Integer.parseInt(empresaStr) : 0);
 
                     ps.addBatch();
                 } catch (Exception e) {
@@ -167,7 +165,9 @@ public class S3ExcelToMySQL {
             }
 
             @Override
-            public void headerFooter(String text, boolean isHeader, String tagName) {}
+            public void headerFooter(String text, boolean isHeader, String tagName) {
+                // Ignorar
+            }
         };
 
         DataFormatter formatter = new DataFormatter();
