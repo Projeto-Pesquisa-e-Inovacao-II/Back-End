@@ -34,34 +34,237 @@ public class DadosEvasaoService extends LeitorPlanilha {
     private String nomeArquivo;
 
 
-    public String obterNomeConcessaoPorId(Integer categoria) {
-        return switch (categoria) {
-            case 1 -> "ECOVIAS";
-            case 2 -> "ECOPISTAS";
-            case 3 -> "ECOSUL";
-            case 4 -> "ECO101";
-            case 5 -> "ECOVALE";
-            case 6 -> "ECOPORTO";
-            case 7 -> "ECORODOVIAS";
-            default -> "CONCESSAO_" + categoria;
+    public String obterNomeConcessaoPorId(Integer lote) {
+        return switch (lote) {
+            case 1 -> "AUTOBAN";
+
+            case 3 -> "TEBE";
+
+            case 6 -> "INTERVIAS";
+
+            case 7 -> "ROTA";
+
+            case 9 -> "TRIANGULO";
+
+            case 11 -> "RENOVIAS";
+
+            case 12 -> "VIA OESTE";
+
+            case 13 -> "COLINAS";
+
+            case 16 -> "CART";
+
+            case 19 -> "VIA RONDOM";
+
+            case 20 -> "SPVIAS";
+
+            case 21 -> "TIETE";
+
+            case 22 -> "ECOVIAS";
+
+            case 23 -> "ECOPISTAS";
+
+            case 24 -> "RODOANEL";
+
+            case 25 -> "SPMAR";
+
+            case 27 -> "TAMOIOS";
+
+            case 28 -> "ENTREVIAS";
+
+            case 29 -> "VIA PAULISTA";
+
+            case 30 -> "EIXO";
+
+            case 31 -> "ECONOROESTE";
+
+
+            default -> "CONCESSAO_" + lote;
         };
     }
 
     public String descricaoCategoria(Integer categoria) {
         return switch (categoria) {
             // modificar segundo tabela
-            case 1 -> "Motocicleta";
-            case 2 -> "Passeio";
-            case 3 -> "Comercial";
+            case 1 -> "2 eixos";
+            case 2 -> "2 eixos";
+            case 3 -> "3 eixos";
+            case 4 -> "4 eixos";
+            case 5 -> "5 eixos";
+            case 6 -> "6 eixos";
+            case 7 -> "3 eixos";
+            case 8 -> "4 eixos";
+            case 9 -> "2 eixos";
+            case 61 -> "7 eixos";
+            case 62 -> "8 eixos";
+            case 63 -> "9 eixos";
+            case 64 -> "10 eixos";
+            case 65 -> "11 eixos";
+            case 66 -> "12 eixos";
+            case 67 -> "13 eixos";
+            case 68 -> "14 eixos";
+            case 69 -> "15 eixos";
+            case 16 -> "16 eixos";
+            case 17 -> "17 eixos";
+            case 18 -> "18 eixos";
             default -> "Categoria desconhecida";
         };
     }
 
     private String nomePraca(Integer praca) {
         return switch (praca) {
-            case 15 -> "Praça Anchieta";
-            case 16 -> "Praça Imigrantes";
-            case 17 -> "Praça Ecovias";
+            case 2 -> "Caieiras";
+            case 3 -> "Campo Limpo";
+            case 4 -> "Itupeva Norte";
+            case 87 -> "Itupeva Sul";
+            case 8 -> "Limeira A (330) Norte";
+            case 88 -> "Limeira A (330) Sul";
+            case 9 -> "Limeira B (348) Norte";
+            case 89 -> "Limeira B (348) Sul";
+            case 7 -> "Nova Odessa Norte";
+            case 90 -> "Nova Odessa Sul";
+            case 1 -> "Perus Norte";
+            case 91 -> "Perus Sul";
+            case 92 -> "Sumaré Sul";
+            case 6 -> "Sumaré Norte";
+            case 5 -> "Valinhos Norte";
+            case 85 -> "Valinhos Sul";
+            case 63 -> "Colina";
+            case 61 -> "Monte Alto";
+            case 62 -> "Pirangi";
+            case 30 -> "Araras";
+            case 34 -> "Descalvado";
+            case 28 -> "Eng. Coelho";
+            case 27 -> "Iracemápolis";
+            case 32 -> "Leme";
+            case 29 -> "Mogi Mirim";
+            case 33 -> "Pirassununga";
+            case 31 -> "Rio Claro";
+            case 35 -> "Sta Cruz das Palmeiras";
+            case 125 -> "Atibaia";
+            case 130 -> "Eng. Coelho";
+            case 126 -> "Igaratá Norte";
+            case 127 -> "Igaratá Sul";
+            case 124 -> "Itatiba";
+            case 131 -> "Jundiaí";
+            case 132 -> "Louveira";
+            case 128 -> "Paulínia A";
+            case 129 -> "Paulínia B";
+            case 167 -> "Pórtico Cosmópolis";
+            case 165 -> "Pórtico Km 74";
+            case 166 -> "Pórtico Paulínia Jd. Betel";
+            case 65 -> "Agulha";
+            case 64 -> "Araraquara";
+            case 66 -> "Catiguá";
+            case 67 -> "Dobrada";
+            case 69 -> "Itápolis";
+            case 70 -> "Jaboticabal";
+            case 68 -> "Taiúva";
+            case 39 -> "Aguaí";
+            case 41 -> "Águas da Prata";
+            case 42 -> "Casa Branca";
+            case 38 -> "Estiva Gerbi";
+            case 43 -> "Itobi";
+            case 36 -> "Jaguariúna";
+            case 44 -> "Mococa";
+            case 37 -> "Pinhal";
+            case 154 -> "Pórtico Sto. Ant. de Posse";
+            case 40 -> "São João da Boa Vista";
+            case 81 -> "Alumínio";
+            case 80 -> "Araçoiaba Leste";
+            case 141 -> "Araçoiaba Oeste";
+            case 76 -> "Barueri";
+            case 77 -> "Itapevi";
+            case 78 -> "Itu";
+            case 75 -> "Osasco";
+            case 82 -> "São Roque";
+            case 79 -> "Sorocaba";
+            case 83 -> "Bloqueio de Boituva";
+            case 84 -> "Bloqueio de Indaiatuba";
+            case 48 -> "Boituva";
+            case 46 -> "Indaiatuba";
+            case 45 -> "Itupeva";
+            case 163 -> "Pórtico Aeroporto";
+            case 164 -> "Pórtico Campina";
+            case 158 -> "Pórtico Itu - 1";
+            case 159 -> "Pórtico Itu - 2";
+            case 160 -> "Pórtico Salto - 1";
+            case 161 -> "Pórtico Salto - 2";
+            case 162 -> "Pórtico Salto - 3";
+            case 47 -> "Porto Feliz";
+            case 50 -> "Rio Claro";
+            case 49 -> "Rio das Pedras";
+            case 111 -> "Assis";
+            case 113 -> "Caiuá";
+            case 109 -> "Ourinhos";
+            case 110 -> "Palmital";
+            case 108 -> "Piratininga";
+            case 112 -> "Pres. Bernardes";
+            case 114 -> "Rancharia";
+            case 107 -> "Regente Feijó";
+            case 106 -> "Sta. Cruz R. Pardo";
+            case 133 -> "Avaí";
+            case 140 -> "Castilho";
+            case 136 -> "Glicério";
+            case 139 -> "Guaraçaí";
+            case 138 -> "Lavínia";
+            case 134 -> "Pirajuí";
+            case 135 -> "Promissão";
+            case 137 -> "Rubiácea";
+            case 54 -> "Alambari";
+            case 59 -> "Avaré";
+            case 52 -> "Buri";
+            case 53 -> "Gramadão";
+            case 60 -> "Iaras";
+            case 51 -> "Itararé";
+            case 58 -> "Itatinga";
+            case 56 -> "Morro I (Norte)";
+            case 55 -> "Morro II (Sul)";
+            case 57 -> "Quadra";
+            case 118 -> "Anhembi";
+            case 120 -> "Areiopolis";
+            case 119 -> "Botucatu";
+            case 117 -> "Conchas";
+            case 122 -> "Elias Fausto";
+            case 121 -> "Lençóis Paulista";
+            case 115 -> "Monte Mor";
+            case 116 -> "Rafard";
+            case 123 -> "Rio das Pedras";
+            case 19 -> "Batistini";
+            case 21 -> "Diadema";
+            case 20 -> "Eldorado";
+            case 18 -> "Piratininga";
+            case 17 -> "Riacho Grande";
+            case 15 -> "Santos";
+            case 16 -> "São Vicente";
+            case 145 -> "Caçapava";
+            case 143 -> "Guararema";
+            case 142 -> "Itaquaquecetuba";
+            case 144 -> "São José dos Campos";
+            case 97 -> "Anhanguera Externa";
+            case 98 -> "Anhanguera Interna Norte";
+            case 99 -> "Anhanguera Interna Sul";
+            case 95 -> "Bandeirantes Externa";
+            case 96 -> "Bandeirantes Interna";
+            case 100 -> "Castello Branco Externa";
+            case 93 -> "Castello Branco Interna";
+            case 101 -> "Padroeira Externa";
+            case 102 -> "Padroeira Interna";
+            case 94 -> "Raimundo Magalhães";
+            case 103 -> "Raposo Tavares Externa";
+            case 104 -> "Raposo Tavares Interna";
+            case 105 -> "Regis Bittencourt";
+            case 152 -> "Anchieta";
+            case 157 -> "Ayrton Senna";
+            case 168 -> "Dutra";
+            case 151 -> "Imigrantes";
+            case 150 -> "Imigrantes - Capital";
+            case 149 -> "Imigrantes - Litoral";
+            case 155 -> "P6E";
+            case 156 -> "P6I";
+            case 148 -> "Parelheiros";
+            case 170 -> "Ribeirão Píres - A";
+            case 169 -> "Ribeirão Píres - B";
             default -> "Praça " + praca;
         };
 
@@ -103,7 +306,6 @@ public class DadosEvasaoService extends LeitorPlanilha {
 
                 Integer colHora = Integer.parseInt(formatter.formatCellValue(row.getCell(4)));
                 Integer colCategoria = Integer.parseInt(formatter.formatCellValue(row.getCell(6)));
-                String descCategoria = descricaoCategoria(colCategoria);
                 Integer colTipoCampo = Integer.parseInt(formatter.formatCellValue(row.getCell(8)));
                 Integer colQuantidade = Integer.parseInt(formatter.formatCellValue(row.getCell(9)));
                 Double colValor = Double.parseDouble(formatter.formatCellValue(row.getCell(10)).replace(',', '.'));
@@ -112,28 +314,34 @@ public class DadosEvasaoService extends LeitorPlanilha {
                     throw new DadoInvalidoException("Quantidade negativa: " + colQuantidade);
                 }
 
-                if (colTipoCampo != 1) {
-                    throw new DadoInvalidoException("Tipo de campo diferente de evasão: " + colTipoCampo);
-                }
 
                 String nomePraca = nomePraca(colPraca);
 
+                String descricaoCategoria = descricaoCategoria(colCategoria);
+
+                String obterNomeConcessaoPorId = obterNomeConcessaoPorId(colLote);
+
+
                 DadosEvasao dadosEvasao = new DadosEvasao(
                         colLote, colPraca, colSentido, colData,
-                        colHora, colCategoria, colTipoCampo, colQuantidade, colValor, nomePraca, descCategoria
+                        colHora, colTipoCampo, colQuantidade, colValor, nomePraca, descricaoCategoria, obterNomeConcessaoPorId
                 );
 
                 dadosEvasaos.add(dadosEvasao);
                 linhasProcessadas++;
                 logger.info("✔ Linha {} tratada com sucesso – {}", row.getRowNum(), nomePraca);
-                salvarLogNoBanco("INFO", "Linha " + row.getRowNum() + " tratada com sucesso – " + nomePraca);
+
+                if (linhasProcessadas % 1000 == 0) {
+                    salvarLogNoBanco("INFO", "Processadas " + linhasProcessadas + " linhas até agora com sucesso.");
+                }
 
 
             } catch (Exception rowException) {
                 MDC.put("status", "FALHA_PROCESSAMENTO");
-                logger.error("Erro ao processar linha {}", row.getRowNum());
-                salvarLogNoBanco("ERROR", "Erro ao processar linha " + row.getRowNum());
+                logger.error("Erro ao processar linha {}: {}", row.getRowNum(), rowException.getMessage(), rowException);
+                salvarLogNoBanco("ERROR", "Erro ao processar linha " + row.getRowNum() + ": " + rowException.getMessage());
             }
+
 
         }
 
@@ -205,16 +413,16 @@ public class DadosEvasaoService extends LeitorPlanilha {
             Integer contador = 0;
 
             for (DadosEvasao d : dadosEvasao) {
-                stmtInserir.setInt(1, d.getLote());
-                stmtInserir.setInt(2, d.getPraca());
+                stmtInserir.setString(1, d.getNomeConcessao()); // concessao por nome
+                stmtInserir.setString(2, d.getNomePraca());// praca por nome
                 stmtInserir.setInt(3, d.getSentido());
                 stmtInserir.setDate(4, new java.sql.Date(d.getDataEvasao().getTime()));
                 stmtInserir.setInt(5, d.getHoras());
-                stmtInserir.setString(6, d.getDescricaoCategoria());
+                stmtInserir.setString(6, d.getDescricaoCategoria()); // categoria por nome
                 stmtInserir.setInt(7, d.getTipoCampo());
                 stmtInserir.setInt(8, d.getQuantidade());
                 stmtInserir.setDouble(9, d.getValor());
-                stmtInserir.setInt(10, concessionaria);
+                stmtInserir.setInt(10, 1);  //dps alterar para "concessionaria"
 
 
                 stmtInserir.executeUpdate();

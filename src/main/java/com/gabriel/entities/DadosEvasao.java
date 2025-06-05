@@ -14,25 +14,34 @@ public class DadosEvasao {
     private Double valor;
     private String nomePraca;
     private String descricaoCategoria;
+    private String nomeConcessao;
 
 
     public DadosEvasao() {
     }
 
-    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas, Integer categoria, Integer tipoCampo, Integer quantidade, Double valor, String nomePraca, String descricaoCategoria) {
+
+    public DadosEvasao(Integer lote, Integer praca, Integer sentido, Date dataEvasao, Integer horas,  Integer tipoCampo, Integer quantidade, Double valor, String nomePraca, String descricaoCategoria, String nomeConcessao) {
         this.lote = lote;
         this.praca = praca;
         this.sentido = sentido;
         this.dataEvasao = dataEvasao;
         this.horas = horas;
-        this.categoria = categoria;
         this.tipoCampo = tipoCampo;
         this.quantidade = quantidade;
         this.valor = valor;
         this.nomePraca = nomePraca;
         this.descricaoCategoria = descricaoCategoria;
+        this.nomeConcessao = nomeConcessao;
     }
 
+    public String getNomeConcessao() {
+        return nomeConcessao;
+    }
+
+    public void setNomeConcessao(String nomeConcessao) {
+        this.nomeConcessao = nomeConcessao;
+    }
 
     public String getDescricaoCategoria() {
         return descricaoCategoria;
